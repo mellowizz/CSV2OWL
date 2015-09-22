@@ -8,6 +8,7 @@ public class OntologyClass {
     private String parent;
 	private String name;
 	private String description;
+	private String descriptionDE;
 
 	public void setName(String name) {
 		this.name = name;
@@ -25,12 +26,20 @@ public class OntologyClass {
 		this.description = description;
 	}
 
-	public String getName() {
-		return this.name;
+	public void setDescriptionDE(String description) {
+		this.descriptionDE = description;
 	}
-
+	
 	public String getDescription() {
 		return description;
+	}
+
+	public String getDescriptionDE() {
+		return descriptionDE;
+	}
+	
+	public String getName() {
+		return this.name;
 	}
 
 	/* TODO: Get rid of magic numbers! */

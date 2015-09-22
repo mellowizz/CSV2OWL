@@ -62,6 +62,11 @@ public class OntologyWriter {
 			OWLAxiom ax = factory.getOWLAnnotationAssertionAxiom(cls.getIRI(),
                      commentAnno);
 			manager.applyChange(new AddAxiom(ontology, ax));
+			OWLAnnotation commentDE = factory.getOWLAnnotation(factory.getRDFSComment(),
+                     factory.getOWLLiteral(EUClass.getDescriptionDE(), "de"));
+			OWLAxiom axDE = factory.getOWLAnnotationAssertionAxiom(cls.getIRI(),
+                     commentDE);
+			manager.applyChange(new AddAxiom(ontology, axDE));
 		}
 		
 		/* write rules */

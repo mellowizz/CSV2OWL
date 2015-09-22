@@ -3,26 +3,14 @@ package csvToOWLRules;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
 
-import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLObjectProperty;
-import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
-import org.semanticweb.owlapi.model.OWLClassExpression;
 
-//import org.semanticweb.owlapi.model.*;
 import com.opencsv.CSVReader;
 
 import owlAPI.OWLmap;
@@ -35,24 +23,17 @@ public class CreateClassesFromCSV {
     public static void createClassesfromCSV(String fileName,
             int colIndex, File owlFile) throws IOException, OWLOntologyCreationException, OWLOntologyStorageException {
         /* Read from CSV */
+        CSVReader reader = null;
         try{
             OntologyCreator ontCreate = new OntologyCreator();
             String ontologyIRI = "http://www.user.tu-berlin.de/niklasmoran/EUNIS/"
                     + owlFile.getName().trim();
             ontCreate.createOntology(ontologyIRI, "version_1_0", owlFile);
-            
-            //OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-            //OWLOntology ontology = manager
-            //        .loadOntologyFromOntologyDocument(IRI.create(ontologyIRI)); 
-            //OWLDataFactory factory = manager.getOWLDataFactory();
             File csvFile = new File(fileName);
             LinkedHashSet<OntologyClass> eunisClasses = new LinkedHashSet<OntologyClass>();
-            CSVReader reader = null;
-            String[] nextLine;
-            String eunisParent = null;
-                
+            /* open file */
             reader = new CSVReader(new FileReader(fileName));
-            eunisClasses = createEUNISObject(reader);
+            eunisClasses = createEUNISObject(fileName);
             OWLmap rulesMap = null;
             if (csvFile.isFile()) {
                 CSVToOWLRules therules = new CSVToOWLRules(fileName,
@@ -63,28 +44,37 @@ public class CreateClassesFromCSV {
             OntologyWriter ontWrite = new OntologyWriter();
             ontWrite.writeAll(eunisClasses, rulesMap,
                     IRI.create(owlFile.toURI()), IRI.create(ontologyIRI));
-            }
-        
-            catch (OWLOntologyStorageException e2) {
-                throw new RuntimeException(e2.getMessage(), e2);
-            }
+        } catch (OWLOntologyStorageException e2) {
+            throw new RuntimeException(e2.getMessage(), e2);
+        } catch (OWLOntologyCreationException e) {
+            throw new RuntimeException(e.getMessage(), e); 
+        } finally {
+            try{
+                if (reader != null){
+                    reader.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
 
-            catch (OWLOntologyCreationException e) {
-                throw new RuntimeException(e.getMessage(), e); 
+            }
         }
     }
 
     private static LinkedHashSet<OntologyClass> createEUNISObject(
-            CSVReader reader) {
+            String fileName) {
         LinkedHashSet<OntologyClass> eunis = new LinkedHashSet<OntologyClass>();
+        CSVReader reader = null;
         String[] nextLine = null;
         String parent = "EUNIS";
         String className = null;
         String description = null;
+        String descriptionDE = null;
         try {
+            reader = new CSVReader(new FileReader(fileName));
             while ((nextLine = reader.readNext()) != null) {
                 className = nextLine[2];
                 description = nextLine[3];
+                descriptionDE = nextLine[4];
                 OntologyClass eunisObj = new OntologyClass();
                 if (className == null) {
                     continue;
@@ -92,16 +82,13 @@ public class CreateClassesFromCSV {
                 if (className.contains(" ")) {
                     className = className.replace(" ", "_");
                 }
-                if (description != null) {
-                    eunisObj.setDescription(description);
-                }
+                eunisObj.setDescription(description);
+                eunisObj.setDescriptionDE(descriptionDE);
                 eunisObj.setParent(parent);
                 eunisObj.setName(className);
                 eunis.add(eunisObj);
                 System.out.println("Added: " + className);
-                // eunisClasses.add(eunisObj);
             }
-            // System.out.println(parameter);
             String entries = "";
             for (OntologyClass c : eunis) {
                 entries += c.getName() + " ";
@@ -109,6 +96,13 @@ public class CreateClassesFromCSV {
             System.out.println(entries);
         } catch (NullPointerException f) {
             f.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            if (reader != null){
+                reader.close();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
