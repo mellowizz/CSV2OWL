@@ -23,27 +23,18 @@ public class Main {
 		LinkedHashSet<OntologyClass> classes = null;
 		File owlFile = new File(myOutFile); //"C:/Users/Moran/ontologies/" +);
 		try {
+		    /*
+		     * 
+            final FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
+                "csv", "CSV");
+            if (!extensionFilter.accept(csvFile)) {
+                System.err.println("error: file doesn't end in .csv");
+            }*/
 			// create ontology
-			OntologyCreator ontCreate = new OntologyCreator();
-			String ontologyIRI = "http://www.user.tu-berlin.de/niklasmoran/EUNIS/"
-					+ owlFile.getName().trim();
-			ontCreate.createOntology(ontologyIRI, "version_1_0", owlFile);
+			
 			/* get classes and individuals */
-			classes = CreateClassesFromCSV.createClassesfromCSV(myFileName, 2);
-			//individuals = createIndividualsFromDB(tableName);
-			OntologyWriter ontWrite = new OntologyWriter(); // IRI.create(owlFile.toURI()));
-			File csvFile = new File(myFileName);
-			int numRules = 0;
-			/* TODO: cleanup! */
-			OWLmap rulesMap = null;
-			if (csvFile.isFile()) {
-				CSVToOWLRules therules = new CSVToOWLRules(myFileName,
-						IRI.create(owlFile.toURI()));
-				rulesMap = therules.CSVRules();
-			/* if another parameter? */
-			ontWrite.writeAll(classes, rulesMap,
-					IRI.create(owlFile.toURI()), IRI.create(ontologyIRI));
-			}
+			CreateClassesFromCSV.createClassesfromCSV(myFileName, 2, owlFile);
+			
 		}catch (OWLOntologyStorageException e2) {
 			throw new RuntimeException(e2.getMessage(), e2);
 		}

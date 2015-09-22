@@ -4,12 +4,10 @@ import java.util.HashMap;
 
 public class Individual {
 	private Integer FID;
+	private String name;
 	private String description;
 	private HashMap<String, Number> values;
 	private HashMap<String, String> stringValues;
-	//private ArrayList<String> DataPropertyNames;
-	//private ArrayList<Number> values;
-	//private ArrayList<String> stringValues;
 
 	public void setFID(Integer number) {
 		this.FID = number;
@@ -19,10 +17,14 @@ public class Individual {
 		return FID;
 	}
 
-	//public ArrayList<String> getDataPropertyNames() {
-	//	return DataPropertyNames;
-	//}
-
+    public void setName(String individualName) {
+       this.name = individualName;
+    }
+   
+    public String getName(){
+        return this.name;
+    }
+    
 	public String getDescription() {
 		return description;
 	}
@@ -54,4 +56,5 @@ public class Individual {
 	public HashMap<String, String> getStringValues() {
 		return stringValues;
 	}
+
 }

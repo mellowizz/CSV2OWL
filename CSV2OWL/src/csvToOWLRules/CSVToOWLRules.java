@@ -3,17 +3,16 @@ package csvToOWLRules;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-
-import javax.swing.filechooser.FileNameExtensionFilter;
+import java.util.Map.Entry;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
@@ -37,8 +36,6 @@ public class CSVToOWLRules {
     public OWLmap CSVRules() 
             throws OWLOntologyCreationException, NumberFormatException,
             IOException, OWLOntologyStorageException {
-        final FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
-                "csv", "CSV");
         /* ontology manager etc */
         OWLmap owlRulesMap = new OWLmap();
         OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
@@ -46,36 +43,46 @@ public class CSVToOWLRules {
                 .loadOntologyFromOntologyDocument(this.docIRI);
         OWLDataFactory factory = manager.getOWLDataFactory();
         final File csvFile = new File(this.directory);
-        if (!extensionFilter.accept(csvFile)) {
-            System.err.println("error: file doesn't end in .csv");
-        }
+        LinkedHashSet<Individual> individuals = new LinkedHashSet<Individual>();
         CSVReader reader = null;
         String[] nextLine;
-        LinkedHashSet<Individual> individuals = new LinkedHashSet<Individual>();
+        String parent = null;
+        OWLDataProperty hasParameter = null;
         try {
             reader = new CSVReader(new FileReader(this.directory));
             nextLine = reader.readNext();
+            HashMap<String, Integer> colIndexes = new HashMap<String, Integer>();
             List<String> headerCols = (List<String>) Arrays.asList(nextLine);
-            List<Integer> myList = new ArrayList<Integer>();
             for (String column : headerCols){
-                if (column.startsWith("EUNIS_") || column.startsWith("NATFLO") || 
+                if (column.startsWith("EUNIS_") && !column.startsWith("EUNIS_N")
+                        || column.startsWith("NATFLO") ||
                         column.startsWith("EAGLE")){
-                    myList.add(headerCols.indexOf(column));
+                    colIndexes.put(column, headerCols.indexOf(column));
                 }
-            } 
+            }
+            /* grab values  */
             while ((nextLine = reader.readNext()) != null){
                 HashMap<String, String> stringValues = new HashMap<String, String>();
                 HashMap<String, Number> values = new HashMap<String, Number>();
                 Individual individual = new Individual();
-                for (Integer valIndex : myList) {
-                   String objectName = nextLine[valIndex].getClass().getName();
-                    if (objectName == "java.util.String"){
-                        stringValues.put("has_"+ headerCols.get(valIndex), nextLine[valIndex]);
-                    } else if (objectName == "java.util.Integer"){
-                        values.put("has_"+ headerCols.get(valIndex), Integer.parseInt(nextLine[valIndex]));
+                String individualName = null;
+                String objectType = null;
+                for (Entry<String, Integer> entry : colIndexes.entrySet()){
+                   objectType = nextLine[entry.getValue()].getClass().getName();
+                   individualName = entry.getKey();
+                   // individual name?! 
+                   String parameter = "has_"+ individualName;
+                   factory.getOWLObjectProperty(IRI.create("#" + parameter));
+                   // parameter = factory.getOWLDataProperty(IRI.create("#"
+                   //        + parameter));
+                    if (objectType == "java.util.String"){
+                        stringValues.put("has_"+ individualName, nextLine[entry.getValue()]);
+                    } else if (objectType== "java.util.Integer"){
+                        values.put("has_"+ individualName, Integer.parseInt(nextLine[entry.getValue()]));
                     }
                 }
-                //individual.setFID("ogc_fid");
+                
+                individual.setName(individualName);
                 individual.setValues(values);
                 individual.setValueString(stringValues);
                 // add to individuals

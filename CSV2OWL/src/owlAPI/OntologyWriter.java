@@ -11,6 +11,7 @@ import java.util.Set;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
@@ -56,6 +57,11 @@ public class OntologyWriter {
 			OWLAxiom parameterAx = factory.getOWLSubClassOfAxiom(parameter, thing);
 			manager.applyChange(new AddAxiom(ontology, classAx));
 			manager.applyChange(new AddAxiom(ontology, parameterAx));
+			OWLAnnotation commentAnno = factory.getOWLAnnotation(factory.getRDFSComment(),
+                     factory.getOWLLiteral(EUClass.getDescription(), "en"));
+			OWLAxiom ax = factory.getOWLAnnotationAssertionAxiom(cls.getIRI(),
+                     commentAnno);
+			manager.applyChange(new AddAxiom(ontology, ax));
 		}
 		
 		/* write rules */
