@@ -6,18 +6,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.List;
+
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLDataProperty;
-import org.semanticweb.owlapi.model.OWLDatatypeRestriction;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
@@ -27,8 +23,6 @@ import com.opencsv.CSVReader;
 
 import owlAPI.Individual;
 import owlAPI.OWLmap;
-import owlAPI.OWLmap.owlRuleSet;
-import owlAPI.OntologyClass;
 
 public class CSVToOWLRules {
     String directory;
