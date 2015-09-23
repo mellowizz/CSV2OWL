@@ -1,6 +1,7 @@
 package owlAPI;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -55,7 +56,7 @@ public class OWLmap {
 	}
 
 	/* owlRules methods have access to this! */
-	Map<String, ArrayList<owlRuleSet>> map = new java.util.HashMap<String, ArrayList<owlRuleSet>>();
+	Map<String, ArrayList<owlRuleSet>> map = new HashMap<String, ArrayList<owlRuleSet>>();
 
 	public ArrayList<owlRuleSet> put(String key, ArrayList<owlRuleSet> value) {
 		return map.put(key, value);

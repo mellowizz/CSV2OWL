@@ -1,5 +1,7 @@
 package owlAPI;
 
+import java.util.HashSet;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -9,8 +11,14 @@ public class OntologyClass {
 	private String name;
 	private String description;
 	private String descriptionDE;
+	static HashSet<String> classes = new HashSet<String>();
 
+	public boolean inSet(String clazz){
+	    return classes.contains(clazz);
+	}
+	
 	public void setName(String name) {
+	    classes.add(name);
 		this.name = name;
 	}
 

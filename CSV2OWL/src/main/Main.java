@@ -20,7 +20,7 @@ public class Main {
 	public static void main(String[] args) {
 		String myFileName = args[0];
 		String myOutFile = args[1];
-		LinkedHashSet<OntologyClass> classes = null;
+		//LinkedHashSet<OntologyClass> classes = null;
 		File owlFile = new File(myOutFile); //"C:/Users/Moran/ontologies/" +);
 		try {
 		    /*
@@ -31,9 +31,10 @@ public class Main {
                 System.err.println("error: file doesn't end in .csv");
             }*/
 			// create ontology
-			
+		    
 			/* get classes and individuals */
-			CreateClassesFromCSV.createClassesfromCSV(myFileName, 2, owlFile);
+            /* get classes and individuals */
+			CreateClassesFromCSV.createClassesfromCSV(myFileName, 2, owlFile); 
 			
 		}catch (OWLOntologyStorageException e2) {
 			throw new RuntimeException(e2.getMessage(), e2);

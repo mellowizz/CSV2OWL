@@ -57,16 +57,18 @@ public class OntologyWriter {
 			OWLAxiom parameterAx = factory.getOWLSubClassOfAxiom(parameter, thing);
 			manager.applyChange(new AddAxiom(ontology, classAx));
 			manager.applyChange(new AddAxiom(ontology, parameterAx));
-			OWLAnnotation commentAnno = factory.getOWLAnnotation(factory.getRDFSComment(),
-                     factory.getOWLLiteral(EUClass.getDescription(), "en"));
-			OWLAxiom ax = factory.getOWLAnnotationAssertionAxiom(cls.getIRI(),
-                     commentAnno);
-			manager.applyChange(new AddAxiom(ontology, ax));
-			OWLAnnotation commentDE = factory.getOWLAnnotation(factory.getRDFSComment(),
-                     factory.getOWLLiteral(EUClass.getDescriptionDE(), "de"));
-			OWLAxiom axDE = factory.getOWLAnnotationAssertionAxiom(cls.getIRI(),
-                     commentDE);
-			manager.applyChange(new AddAxiom(ontology, axDE));
+			if (EUClass.getDescription() != null) {
+                OWLAnnotation commentAnno = factory.getOWLAnnotation(factory.getRDFSComment(),
+                         factory.getOWLLiteral(EUClass.getDescription(), "en"));
+                OWLAxiom ax = factory.getOWLAnnotationAssertionAxiom(cls.getIRI(),
+                         commentAnno);
+                manager.applyChange(new AddAxiom(ontology, ax));
+                OWLAnnotation commentDE = factory.getOWLAnnotation(factory.getRDFSComment(),
+                         factory.getOWLLiteral(EUClass.getDescriptionDE(), "de"));
+                OWLAxiom axDE = factory.getOWLAnnotationAssertionAxiom(cls.getIRI(),
+                         commentDE);
+                manager.applyChange(new AddAxiom(ontology, axDE));
+			}
 		}
 		
 		/* write rules */

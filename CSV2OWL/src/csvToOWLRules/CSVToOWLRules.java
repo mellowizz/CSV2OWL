@@ -3,16 +3,22 @@ package csvToOWLRules;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLDataProperty;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
@@ -22,15 +28,18 @@ import com.opencsv.CSVReader;
 
 import owlAPI.Individual;
 import owlAPI.OWLmap;
+import owlAPI.OWLmap.owlRuleSet;
 
 public class CSVToOWLRules {
     String directory;
     IRI docIRI;
     int numRules;
+    HashMap<String, Integer> nameIndex = new HashMap<String, Integer>();
 
-    public CSVToOWLRules(String csvDir, IRI documentIRI){
+    public CSVToOWLRules(String csvDir, IRI documentIRI, HashMap<String, Integer> nameIndex){
         this.directory = csvDir;
         this.docIRI = documentIRI;
+        this.nameIndex = nameIndex;
     }
 
     public OWLmap CSVRules() 
@@ -46,49 +55,39 @@ public class CSVToOWLRules {
         LinkedHashSet<Individual> individuals = new LinkedHashSet<Individual>();
         CSVReader reader = null;
         String[] nextLine;
-        String parent = null;
-        OWLDataProperty hasParameter = null;
+        OWLObjectProperty hasParameter = null;
+        String paramName = null;
+        String paramValue = null;
+        String eunisClass = null;
+        Set<OWLClassExpression> ruleSet = new HashSet<OWLClassExpression>();
+        OWLClass currEunis = null;
+        int ruleCounter = 0;
         try {
-            reader = new CSVReader(new FileReader(this.directory));
-            nextLine = reader.readNext();
-            HashMap<String, Integer> colIndexes = new HashMap<String, Integer>();
-            List<String> headerCols = (List<String>) Arrays.asList(nextLine);
-            for (String column : headerCols){
-                if (column.startsWith("EUNIS_") && !column.startsWith("EUNIS_N")
-                        || column.startsWith("NATFLO") ||
-                        column.startsWith("EAGLE")){
-                    colIndexes.put(column, headerCols.indexOf(column));
-                }
-            }
-            /* grab values  */
+            reader = new CSVReader(new FileReader(csvFile));
             while ((nextLine = reader.readNext()) != null){
-                HashMap<String, String> stringValues = new HashMap<String, String>();
-                HashMap<String, Number> values = new HashMap<String, Number>();
-                Individual individual = new Individual();
-                String individualName = null;
-                String objectType = null;
-                for (Entry<String, Integer> entry : colIndexes.entrySet()){
-                   objectType = nextLine[entry.getValue()].getClass().getName();
-                   individualName = entry.getKey();
-                   // individual name?! 
-                   String parameter = "has_"+ individualName;
-                   factory.getOWLObjectProperty(IRI.create("#" + parameter));
-                   // parameter = factory.getOWLDataProperty(IRI.create("#"
-                   //        + parameter));
-                    if (objectType == "java.util.String"){
-                        stringValues.put("has_"+ individualName, nextLine[entry.getValue()]);
-                    } else if (objectType== "java.util.Integer"){
-                        values.put("has_"+ individualName, Integer.parseInt(nextLine[entry.getValue()]));
+                for (Entry<String, Integer> entry : nameIndex.entrySet()) {
+                    // EUNIS = 2
+                    eunisClass = nextLine[2];
+                    paramName = entry.getKey();
+                    paramValue = nextLine[entry.getValue()];
+                    OWLmap.owlRuleSet rule = new OWLmap.owlRuleSet(eunisClass, ruleCounter);
+                    rule.addAll(ruleSet);
+                    ruleSet.clear();
+                    if (owlRulesMap.get(eunisClass) == null){
+                            ArrayList<owlRuleSet> newRules = new ArrayList<owlRuleSet>();
+                            newRules.add(rule);
+                           owlRulesMap.put(eunisClass, newRules); 
+                           continue;
+                    } else {
+                        // collect parameters in ruleSet
+                        ruleCounter = 0;
+                        owlRulesMap.get(eunisClass).add(rule);
                     }
+                    hasParameter = factory.getOWLObjectProperty(IRI.create("#" + "has_" + paramName));
+                    currEunis = factory.getOWLClass(IRI.create("#" + eunisClass));
+                    OWLClassExpression newRestriction = factory.getOWLObjectSomeValuesFrom(hasParameter, currEunis);
+                    ruleSet.add(newRestriction);
                 }
-                
-                individual.setName(individualName);
-                individual.setValues(values);
-                individual.setValueString(stringValues);
-                // add to individuals
-                individuals.add(individual);
-                // System.out.println(individual.getDataPropertyNames() + " : "
-                // + individual.getValues());
             }
         } catch (IOException e){
             e.printStackTrace();
