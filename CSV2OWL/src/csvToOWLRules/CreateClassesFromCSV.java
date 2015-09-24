@@ -21,6 +21,7 @@ import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
 import com.opencsv.CSVReader;
 
+import owlAPI.Individual;
 import owlAPI.OWLmap;
 import owlAPI.OntologyClass;
 import owlAPI.OntologyCreator;
@@ -40,12 +41,9 @@ public class CreateClassesFromCSV {
         String ontologyIRI = "http://www.user.tu-berlin.de/niklasmoran/EUNIS/"
                 + owlFile.getName().trim();
         IRI owlIRI = IRI.create(owlFile.toURI());
+        LinkedHashSet<Individual> individuals = null;
         try {
             File csvFile = new File(fileName);
-            OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-            // OWLOntology ontology = manager
-            // .loadOntologyFromOntologyDocument(iri);
-            OWLDataFactory factory = manager.getOWLDataFactory();
             /* open file */
             reader = new CSVReader(new FileReader(fileName));
             // nextLine = reader.readNext();
@@ -54,9 +52,13 @@ public class CreateClassesFromCSV {
             ontCreate.createOntology(ontologyIRI, "version_1_0", owlFile);
 
             eunisClasses = createEUNISObject(fileName, nameIndex, owlIRI);
+            individuals = CreateIndividualsFromCSV.createIndividualsFromCSV(fileName, nameIndex);
             CSVToOWLRules therules = new CSVToOWLRules(fileName, owlIRI,
                     nameIndex);
             rulesMap = therules.CSVRules();
+            OntologyWriter ontWrite = new OntologyWriter(); // IRI.create(owlFile.toURI()));
+            ontWrite.writeAll(eunisClasses, individuals, rulesMap, owlIRI,
+                    IRI.create(ontologyIRI));
         } catch (OWLOntologyCreationException e) {
             throw new RuntimeException(e.getMessage(), e);
         } finally {
@@ -68,9 +70,6 @@ public class CreateClassesFromCSV {
                 e.printStackTrace();
             }
         }
-        OntologyWriter ontWrite = new OntologyWriter(); // IRI.create(owlFile.toURI()));
-        ontWrite.writeAll(eunisClasses, rulesMap, owlIRI,
-                IRI.create(ontologyIRI));
     }
 
     private static LinkedHashSet<OntologyClass> createEUNISObject(
