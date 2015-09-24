@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -43,7 +44,7 @@ public class OntologyWriter {
 	 * Writes properties and classes to ontology
 	 */
 
-	public void writeAll(LinkedHashSet<OntologyClass> classes, LinkedHashSet<Individual> individuals, OWLmap rules, 
+	public void writeAll(LinkedHashSet<OntologyClass> classes, LinkedHashSet<Individual> individuals, List<AddAxiom> rules, 
 	        IRI documentIRI, IRI ontologyIRI)
 	                throws OWLOntologyCreationException, 
 	                OWLOntologyStorageException {
@@ -80,74 +81,23 @@ public class OntologyWriter {
                 manager.applyChange(new AddAxiom(ontology, axDE));
 			}
 		}
-		System.out.println("# of individuals: " + individuals.size());
-		
-        for (Individual ind : individuals) {
-            Integer index = 0;
-
-            OWLNamedIndividual obj = factory.getOWLNamedIndividual(
-                    "#" + ind.getName(), pm);
-
-            for (Entry<String, Number> entry : ind.getValues().entrySet()){
-                OWLObjectProperty dataProp = factory.getOWLObjectProperty("#"
-                        + entry.getKey(), pm);
-
-                OWLDatatype doubleDatatype = factory
-                        .getOWLDatatype(OWL2Datatype.XSD_DOUBLE.getIRI());
-
-                OWLNamedIndividual name = factory.getOWLNamedIndividual(entry.getValue().toString(), pm);
-                OWLLiteral literal = factory.getOWLLiteral(entry.getValue().toString(),
-                        doubleDatatype);
-
-                OWLObjectPropertyAssertionAxiom dataPropertyAssertion = factory
-                        .getOWLObjectPropertyAssertionAxiom(dataProp, obj,
-                                name);
-                manager.applyChange(new AddAxiom(ontology, dataPropertyAssertion));
-                index = index + 1;
-            }
-            index = 0;
-            for (Entry<String, String> entry : ind.getStringValues().entrySet()){
-                OWLObjectProperty dataProp = factory.getOWLObjectProperty("#"
-                        + entry.getKey(), pm);
-                 
-                OWLClass myClass = factory.getOWLClass(entry.getValue().toString(), pm);
-                OWLDatatype stringDatatype = factory
-                        .getOWLDatatype(OWL2Datatype.XSD_STRING.getIRI());
-                //System.out.println("about to write: " + value);
-                String value = entry.getValue();
-                if (value == null){
-                    value = "";
-                }
-                OWLNamedIndividual name = factory.getOWLNamedIndividual(entry.getValue().toString(), pm);
-
-                OWLLiteral literal = factory.getOWLLiteral(value,
-                        stringDatatype);
-
-                OWLObjectPropertyAssertionAxiom dataPropertyAssertion = factory
-                        .getOWLObjectPropertyAssertionAxiom(dataProp, obj,
-                                name);
-                manager.applyChange(new AddAxiom(ontology, dataPropertyAssertion));
-                index = index + 1;
-            }
-        }
-        OWLDatatype rdfsLiteral = factory.getTopDatatype();
-        OWLLiteral literal = factory.getOWLLiteral("tree",
-                rdfsLiteral);
-        
+		/*
         OWLObjectProperty hasVeg = factory.getOWLObjectProperty("#has_EAGLE_vegetationType_1", pm);
         OWLClass eunis = factory.getOWLClass(IRI.create("#E1"));
         OWLClass vegType = factory.getOWLClass(IRI.create("#tree"));
-        factory.getOWLDataOneOf(literal);
         OWLClassExpression hasVegRest = factory.getOWLObjectSomeValuesFrom(hasVeg, vegType);
         OWLEquivalentClassesAxiom ax1 = factory.getOWLEquivalentClassesAxiom(eunis, hasVegRest);
         AddAxiom addAx = new AddAxiom(ontology, ax1);
         manager.applyChange(addAx);
         //factory.getOWLObj
+        */
+		System.out.println("object properties: " + rules.size());
+		//manager.applyChanges(rules);
         
         
 		/* write rules */
         /*
-		OWLClassExpression firstRuleSet= null;
+        OWLClassExpression firstRuleSet= null;
 		OWLClass owlCls = null;
 		OWLObjectUnionOf totalunion = null;
 		Iterator<Entry<String, ArrayList<owlRuleSet>>> it = rules.map.entrySet().iterator();
@@ -156,10 +106,8 @@ public class OntologyWriter {
 			Map.Entry<String, ArrayList<owlRuleSet>> pair = it.next();
             String currCls = (String) pair.getKey();
 			owlCls = factory.getOWLClass(IRI.create("#" + currCls ));
-			OWLDataProperty dataProp = factory.getOWLDataProperty("#"
+			OWLObjectProperty dataProp = factory.getOWLObjectProperty("#"
                     + currCls, pm);
-			OWLIndividual obj = factory.getOWLNamedIndividual(
-                    "#" + currCls, pm);
 			ArrayList<owlRuleSet> currRuleset = (ArrayList<owlRuleSet>) pair.getValue();
 			for (int i=0; i< currRuleset.size(); i++){
 				firstRuleSet = factory.getOWLObjectIntersectionOf(currRuleset.get(i).getRuleList(currCls));
@@ -169,8 +117,8 @@ public class OntologyWriter {
 			unionSet.clear();
 			manager.addAxiom(ontology, factory.getOWLEquivalentClassesAxiom(owlCls, totalunion));
 		}
-            //System.out.println("about to write: " + value);
 		*/
+            //System.out.println("about to write: " + value);
 		manager.saveOntology(ontology);
 		
 	}

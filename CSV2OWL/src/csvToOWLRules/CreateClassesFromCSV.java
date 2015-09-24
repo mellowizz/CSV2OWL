@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
@@ -36,7 +37,8 @@ public class CreateClassesFromCSV {
         CSVReader reader = null;
         String[] nextLine = null;
         HashMap<String, Integer> nameIndex = null;
-        OWLmap rulesMap = null;
+        //OWLmap rulesMap = null;
+        List<AddAxiom> rulesList = null;
         LinkedHashSet<OntologyClass> eunisClasses = new LinkedHashSet<OntologyClass>();
         String ontologyIRI = "http://www.user.tu-berlin.de/niklasmoran/EUNIS/"
                 + owlFile.getName().trim();
@@ -52,12 +54,12 @@ public class CreateClassesFromCSV {
             ontCreate.createOntology(ontologyIRI, "version_1_0", owlFile);
 
             eunisClasses = createEUNISObject(fileName, nameIndex, owlIRI);
-            individuals = CreateIndividualsFromCSV.createIndividualsFromCSV(fileName, nameIndex);
+            //individuals = CreateIndividualsFromCSV.createIndividualsFromCSV(fileName, nameIndex);
             CSVToOWLRules therules = new CSVToOWLRules(fileName, owlIRI,
                     nameIndex);
-            rulesMap = therules.CSVRules();
+            rulesList = therules.CSVRules();
             OntologyWriter ontWrite = new OntologyWriter(); // IRI.create(owlFile.toURI()));
-            ontWrite.writeAll(eunisClasses, individuals, rulesMap, owlIRI,
+            ontWrite.writeAll(eunisClasses, individuals, rulesList, owlIRI,
                     IRI.create(ontologyIRI));
         } catch (OWLOntologyCreationException e) {
             throw new RuntimeException(e.getMessage(), e);
@@ -99,9 +101,10 @@ public class CreateClassesFromCSV {
                 }
                 if (className.contains(" ")) {
                     if (className.startsWith(" ")) {
-                        className = className.replace(" ", "");
+                        continue;
+                    } else{
+                        className = className.replace(" ", "_");
                     }
-                    className = className.replace(" ", "_");
                 }
                 OntologyClass eunisObj = new OntologyClass();
                 if (description != null) {
@@ -116,7 +119,6 @@ public class CreateClassesFromCSV {
                      * if (myMap.get(className) == null){ myMap.put(className,
                      * eunisObj);
                      */
-                    System.out.println("Added: " + className);
                 }
             }
             String entries = "";
