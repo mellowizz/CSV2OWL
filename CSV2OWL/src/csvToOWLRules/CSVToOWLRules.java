@@ -113,13 +113,17 @@ public class CSVToOWLRules {
                     if (paramValue == null || paramValue == " " || isInteger(paramValue, 10)){
                         //System.out.println("!!! ");
                         continue;
-                    } else{
+                    } else if ("#" + paramValue == "#"){
+                        continue;
+                    } else {
                             hasParameter = factory.getOWLObjectProperty(IRI.create("#" + "has_" + paramName));
                             currEunis = factory.getOWLClass(IRI.create("#" + eunisClass));
                             parameterValue = factory.getOWLClass(IRI.create("#" + paramValue));
                             myRestriction = factory.getOWLObjectSomeValuesFrom(hasParameter, parameterValue);
                             OWLEquivalentClassesAxiom ax1 = factory.getOWLEquivalentClassesAxiom(currEunis, myRestriction);
                             AddAxiom addAx = new AddAxiom(ontology, ax1);
+                            manager.applyChange(addAx);
+                            /*
                         if (myExpressions.get("#" + eunisClass) == null){
                             HashSet<OWLClassExpression> lis = new HashSet<OWLClassExpression>();
                             lis.add(myRestriction);
@@ -131,11 +135,13 @@ public class CSVToOWLRules {
                            myList.add(myRestriction);
                            myExpressions.put("#" + eunisClass, myList);
                         }
+                        */
                     axiomList.add(addAx);
                     //ruleSet.add(myRestriction);
                     }
                 }
             }
+            /*
             OWLObjectUnionOf totalunion = null;
             OWLClass owlCls = null;
             Set<OWLClassExpression> setOWL = new HashSet<OWLClassExpression>();// null; 
@@ -155,7 +161,7 @@ public class CSVToOWLRules {
                 totalunion = factory.getOWLObjectUnionOf(setOWL);
                 setOWL.clear();
                 manager.addAxiom(ontology, factory.getOWLEquivalentClassesAxiom(currEunis, totalunion));//myRestriction));
-            }
+            }*/
         } catch (IOException e){
             e.printStackTrace();
         }
