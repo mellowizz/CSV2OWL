@@ -2,18 +2,11 @@ package main;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedHashSet;
 
-import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
-import csvToOWLRules.CSVToOWLRules;
 import csvToOWLRules.CreateClassesFromCSV;
-import owlAPI.OWLmap;
-import owlAPI.OntologyClass;
-import owlAPI.OntologyCreator;
-import owlAPI.OntologyWriter;
 
 public class Main {
 

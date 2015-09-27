@@ -5,41 +5,25 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Scanner;
-import java.util.Set;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLDataProperty;
-import org.semanticweb.owlapi.model.OWLDataPropertyExpression;
-import org.semanticweb.owlapi.model.OWLDatatype;
 import org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom;
-import org.semanticweb.owlapi.model.OWLIndividual;
-import org.semanticweb.owlapi.model.OWLLiteral;
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
-import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
-import org.semanticweb.owlapi.model.OWLObjectUnionOf;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
-import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import com.opencsv.CSVReader;
 
-import owlAPI.Individual;
-import owlAPI.OWLmap;
-import owlAPI.OWLmap.owlRuleSet;
 
 public class CSVToOWLRules {
     String directory;
@@ -56,19 +40,22 @@ public class CSVToOWLRules {
 
     public static boolean isInteger(String s, int radix) {
         Scanner sc = new Scanner(s.trim());
-        if (!sc.hasNextInt(radix))
-            return false;
+        if (!sc.hasNextInt(radix)){
+        	sc.close();
+        	return false;
+        }
         // we know it starts with a valid int, now make sure
         // there's nothing left!
         sc.nextInt(radix);
-        return !sc.hasNext();
+        boolean returnVal = !sc.hasNext();
+        sc.close();
+        return returnVal;
     }
 
     public List<AddAxiom> CSVRules() 
             throws OWLOntologyCreationException, NumberFormatException,
             IOException, OWLOntologyStorageException {
         /* ontology manager etc */
-        OWLmap owlRulesMap = new OWLmap();
         OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
         OWLOntology ontology = manager
                 .loadOntologyFromOntologyDocument(this.docIRI);
@@ -81,14 +68,9 @@ public class CSVToOWLRules {
         String paramValue = null;
         String eunisClass = null;
         OWLClassExpression myRestriction = null;
-        Set<OWLClassExpression> ruleSet = new HashSet<OWLClassExpression>();
-        Set<AddAxiom> axiomSet = new HashSet<AddAxiom>(); 
         OWLClass currEunis = null;
         OWLClass parameterValue = null; 
-        int ruleCounter = 0;
         List<AddAxiom> axiomList = new ArrayList<AddAxiom>();
-        HashMap<String, HashSet<OWLClassExpression>> myExpressions = new HashMap<String, HashSet<OWLClassExpression>>();
-        //HashMap<String, HashSet<AddAxiom>> myExpressions = new HashMap<String, HashSet<AddAxiom>>();
         try {
             reader = new CSVReader(new FileReader(csvFile));
             while ((nextLine = reader.readNext()) != null){

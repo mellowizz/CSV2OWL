@@ -5,14 +5,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
@@ -30,7 +27,7 @@ public class CreateClassesFromCSV {
     OWLOntologyStorageException {
         /* Read from CSV */
         CSVReader reader = null;
-        String[] nextLine = null;
+        //String[] nextLine = null;
         HashMap<String, Integer> nameIndex = null;
         //OWLmap rulesMap = null;
         List<AddAxiom> rulesList = null;
@@ -40,7 +37,6 @@ public class CreateClassesFromCSV {
         IRI owlIRI = IRI.create(owlFile.toURI());
         LinkedHashSet<Individual> individuals = null;
         try {
-            File csvFile = new File(fileName);
             /* open file */
             reader = new CSVReader(new FileReader(fileName));
             // nextLine = reader.readNext();
@@ -78,11 +74,11 @@ public class CreateClassesFromCSV {
         String className = null;
         String description = null;
         String descriptionDE = null;
-        int ruleCounter = 0;
+        //int ruleCounter = 0;
         try {
             reader = new CSVReader(new FileReader(fileName));
             nextLine = reader.readNext();
-            Set<OWLClassExpression> ruleSet = new HashSet<OWLClassExpression>();
+            //Set<OWLClassExpression> ruleSet = new HashSet<OWLClassExpression>();
             while ((nextLine = reader.readNext()) != null) {
                 className = nextLine[2];
                 description = nextLine[3];
@@ -120,6 +116,7 @@ public class CreateClassesFromCSV {
             for (OntologyClass c : eunis) {
                 entries += c.getName() + " ";
             }
+            System.out.println(entries);
         } catch (NullPointerException f) {
             f.printStackTrace();
         } catch (IOException e) {

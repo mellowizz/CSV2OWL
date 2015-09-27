@@ -1,15 +1,12 @@
 package csvToOWLRules;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map.Entry;
 
 import com.opencsv.CSVReader;
-import java.io.FileReader;
-import java.io.IOException;
 
 import owlAPI.Individual;
 
