@@ -1,0 +1,23 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Sep 16 16:24:22 2015
+
+@author: Moran
+"""
+import requests
+import shutil
+import sys
+import io
+
+response = requests.get('https://docs.google.com/feeds/download/spreadsheets/Export?key=1DetLdQWehIFy31pFduqU20o_EO8KziKxWiORkhXzzQc&exportFormat=csv&gid=403134972', stream=True)
+response.raise_for_status()
+
+output_file = r'C:\Users\Moran\test-rlp\rlp_key_latest.csv'
+if sys.version < '3':
+    infile = io.open(output_file, 'wb')
+else:
+    infile = io.open(output_file, 'wb')
+#print(response.content)
+with infile as csv:
+    response.raw.decode_content = True
+    shutil.copyfileobj(response.raw, csv)
