@@ -9,10 +9,9 @@
 	<classpathentry exported="true" kind="lib" path="lib/guava-18.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/opencsv-3.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/org.semanticweb.HermiT.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/owlapi-distribution-3.4.3-bin.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/postgresql-9.4-1201.jdbc4.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/FaCTpp-OWLAPI-4.x-v1.6.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/owlapi-osgidistribution-4.0.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/uk.ac.manchester.cs.owl.factplusplus-P5.0-v1.6.4.jar"/>
+	<classpathentry kind="lib" path="lib/owlapi-distribution-3.4.3-bin.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

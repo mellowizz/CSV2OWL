@@ -37,7 +37,6 @@ public class Main {
 		} catch (NumberFormatException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } finally {
 			System.out.println("created owlFile");
