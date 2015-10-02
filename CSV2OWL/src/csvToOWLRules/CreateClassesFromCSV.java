@@ -5,10 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,36 +27,32 @@ import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
 import com.opencsv.CSVReader;
 
-import owlAPI.OWLmap;
-import owlAPI.OntologyClass;
 import owlAPI.OntologyCreator;
 
 public class CreateClassesFromCSV {
 
     public static void createClassesfromCSV(String fileName, int colIndex,
             File owlFile) throws IOException, OWLOntologyCreationException,
-    OWLOntologyStorageException {
+                    OWLOntologyStorageException {
         /* Read from CSV */
         CSVReader reader = null;
         LinkedHashMap<String, Integer> nameIndex = null;
         String iriString = "http://www.user.tu-berlin.de/niklasmoran/EUNIS/"
                 + owlFile.getName().trim();
-        //IRI owlIRI = IRI.create(owlFile.toURI());
         try {
             /* open file */
             reader = new CSVReader(new FileReader(fileName));
-            // nextLine = reader.readNext();
             nameIndex = getColIndexes(fileName);
             OntologyCreator ontCreate = new OntologyCreator();
             ontCreate.createOntology(iriString, "version_1_0", owlFile);
             IRI ontologyIRI = IRI.create(iriString);
-            createEUNISObject(fileName, nameIndex, IRI.create(owlFile), ontologyIRI); //owlIRI);
+            createEUNISObject(fileName, nameIndex, IRI.create(owlFile),
+                    ontologyIRI); // owlIRI);
         } catch (OWLOntologyCreationException e) {
             throw new RuntimeException(e.getMessage(), e);
-        } catch (FileNotFoundException e){
+        } catch (FileNotFoundException e) {
             throw new RuntimeException(e.getMessage(), e);
-        }
-         finally {
+        } finally {
             try {
                 if (reader != null) {
                     reader.close();
@@ -69,86 +63,84 @@ public class CreateClassesFromCSV {
         }
     }
 
-    private static void createEUNISObject(
-            String fileName, LinkedHashMap<String, Integer> nameIndex, IRI iri, IRI ontologyIRI) throws OWLOntologyCreationException {
-       
+    private static void createEUNISObject(String fileName,
+            LinkedHashMap<String, Integer> nameIndex, IRI iri, IRI ontologyIRI)
+                    throws OWLOntologyCreationException {
+
         OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-        OWLOntology ontology = manager
-                .loadOntologyFromOntologyDocument(iri); 
+        OWLOntology ontology = manager.loadOntologyFromOntologyDocument(iri);
         OWLDataFactory factory = manager.getOWLDataFactory();
-        LinkedHashSet<OntologyClass> eunis = new LinkedHashSet<OntologyClass>();
         CSVReader reader = null;
         String[] nextLine = null;
-        String parent = null; //EUNIS";
-        String className = null;
+        String parent = null; // EUNIS";
         String description = null;
         String descriptionDE = null;
         String paramName = "Parameter";
         String paramValue = null;
-        HashMap<String, OWLmap> owlObj = new HashMap<String, OWLmap>();
-        //owlobj.put("EUNIS", new OWLmap.owlRuleSet(, ))
-        //int ruleCounter = 0;
-        OWLmap owlRulesMap = new OWLmap();
-        int ruleCounter = 0;
         Set<OWLClassExpression> ruleSet = new HashSet<OWLClassExpression>();
         OWLClassExpression myRestriction = null;
         OWLClass currEunis = null;
         OWLClass parameterValue = null;
         OWLObjectProperty hasParameter = null;
+        int intVal = -1;
         try {
             reader = new CSVReader(new FileReader(fileName));
             // skip header
             nextLine = reader.readNext();
-            int intVal = -1;
             while ((nextLine = reader.readNext()) != null) {
-                currEunis = createOntoClass(manager, ontology, ontologyIRI, factory, "EUNIS", nextLine[2], nextLine[3], nextLine[4]);
+                currEunis = createOntoClass(manager, ontology, ontologyIRI,
+                        factory, "EUNIS", nextLine[2], nextLine[3],
+                        nextLine[4]);
                 /* loop over parameters and cleanup */
-                for (Map.Entry<String, Integer> headerEntry : nameIndex.entrySet()){
+                for (Map.Entry<String, Integer> headerEntry : nameIndex
+                        .entrySet()) {
                     /* paramName is the ObjectProperty */
                     paramName = headerEntry.getKey();
                     paramValue = nextLine[headerEntry.getValue()];
                     if (paramValue == "" || paramValue == null) {
-                            continue;
+                        continue;
                     }
-                    /* TODO: refactor */ 
+                    /* TODO: refactor */
                     paramValue = paramValue.replaceAll("\\s", "_");
                     if (paramValue.contains("%")) {
-                        paramValue= paramValue.replace("%", "");
-                    } else if (paramValue.startsWith("0") || paramValue.startsWith("1")){
-                        try{
-                            if (paramValue.contains(",")){
+                        paramValue = paramValue.replace("%", "");
+                    } else if (paramValue.startsWith("0")
+                            || paramValue.startsWith("1")) {
+                        try {
+                            if (paramValue.contains(",")) {
                                 paramValue = paramValue.replace(",", ".");
                             }
-                           intVal = Integer.parseInt(paramValue);
-                        } catch(NumberFormatException e){
-                          e.printStackTrace(); 
-                       }
+                            intVal = Integer.parseInt(paramValue);
+                        } catch (NumberFormatException e) {
+                            e.printStackTrace();
+                        }
                     }
                     parent = "Parameter";
                     description = "A parameter from " + paramName;
                     descriptionDE = "Ein Parameter von " + paramName;
                     /* create class */
-                    createOntoClass(manager, ontology, ontologyIRI, factory, parent, paramValue, description,
-                            descriptionDE);
-                    
+                    createOntoClass(manager, ontology, ontologyIRI, factory,
+                            parent, paramValue, description, descriptionDE);
+
                     System.out.println("paramName: " + paramName);
-                    /* create rule */ 
-                    hasParameter = factory.getOWLObjectProperty(IRI.create("#" + "has_" + paramName));
-                    //currEunis = factory.getOWLClass(IRI.create("#" + nextLine[2]));
-                    parameterValue = factory.getOWLClass(IRI.create("#" + paramValue));
-                    myRestriction = factory.getOWLObjectSomeValuesFrom(hasParameter, parameterValue); //parameterValue);
+                    /* create rule */
+                    hasParameter = factory.getOWLObjectProperty(
+                            IRI.create("#" + "has_" + paramName));
+                    // currEunis = factory.getOWLClass(IRI.create("#" +
+                    // nextLine[2]));
+                    parameterValue = factory
+                            .getOWLClass(IRI.create("#" + paramValue));
+                    myRestriction = factory.getOWLObjectSomeValuesFrom(
+                            hasParameter, parameterValue); // parameterValue);
                     ruleSet.add(myRestriction);
-                    //OWLmap.owlRuleSet rule = new OWLmap.owlRuleSet (paramValue); 
-                    //rule.addAll(ruleSet);
-                    }
-                    /* add all rules */
-                    manager.addAxiom(ontology, factory.getOWLEquivalentClassesAxiom(currEunis, factory.getOWLObjectIntersectionOf(ruleSet)));
-                    //OWLEquivalentClassesAxiom ax1 = factory.getOWLEquivalentClassesAxiom(currEunis, myRestriction);
-                    //AddAxiom addAx = new AddAxiom(ontology, ax1);
-                    //manager.applyChange(addAx);
-                    ruleSet.clear();
+                }
+                /* add all rules */
+                manager.addAxiom(ontology,
+                        factory.getOWLEquivalentClassesAxiom(currEunis,
+                                factory.getOWLObjectIntersectionOf(ruleSet)));
+                ruleSet.clear();
             }
-        manager.saveOntology(ontology);
+            manager.saveOntology(ontology);
         } catch (NullPointerException f) {
             f.printStackTrace();
         } catch (IOException e) {
@@ -163,43 +155,47 @@ public class CreateClassesFromCSV {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //return owlRulesMap;
     }
 
-    private static OWLClass createOntoClass(OWLOntologyManager manager, OWLOntology ontology, IRI ontologyIRI, OWLDataFactory factory, String parent, String clazz,
-            String description, String descriptionDE) {
-        OWLClass parentCls = factory.getOWLClass(IRI.create(ontologyIRI + "#"
-                + parent));
-        OWLClass cls = factory.getOWLClass(IRI.create(ontologyIRI + "#"
-                + clazz));
+    private static OWLClass createOntoClass(OWLOntologyManager manager,
+            OWLOntology ontology, IRI ontologyIRI, OWLDataFactory factory,
+            String parent, String clazz, String description,
+            String descriptionDE) {
+        OWLClass parentCls = factory
+                .getOWLClass(IRI.create(ontologyIRI + "#" + parent));
+        OWLClass cls = factory
+                .getOWLClass(IRI.create(ontologyIRI + "#" + clazz));
         OWLClass thing = factory.getOWLThing();
         OWLAxiom classAx = factory.getOWLSubClassOfAxiom(cls, parentCls);
         OWLAxiom parameterAx = factory.getOWLSubClassOfAxiom(parentCls, thing);
         manager.applyChange(new AddAxiom(ontology, classAx));
         manager.applyChange(new AddAxiom(ontology, parameterAx));
         if (description != null) {
-            OWLAnnotation commentAnno = factory.getOWLAnnotation(factory.getRDFSComment(),
-                     factory.getOWLLiteral(description, "en"));
+            OWLAnnotation commentAnno = factory.getOWLAnnotation(
+                    factory.getRDFSComment(),
+                    factory.getOWLLiteral(description, "en"));
             OWLAxiom ax = factory.getOWLAnnotationAssertionAxiom(cls.getIRI(),
-                     commentAnno);
+                    commentAnno);
             manager.applyChange(new AddAxiom(ontology, ax));
-            OWLAnnotation commentDE = factory.getOWLAnnotation(factory.getRDFSComment(),
-                     factory.getOWLLiteral(descriptionDE, "de"));
+            OWLAnnotation commentDE = factory.getOWLAnnotation(
+                    factory.getRDFSComment(),
+                    factory.getOWLLiteral(descriptionDE, "de"));
             OWLAxiom axDE = factory.getOWLAnnotationAssertionAxiom(cls.getIRI(),
-                     commentDE);
+                    commentDE);
             manager.applyChange(new AddAxiom(ontology, axDE));
         }
         return cls;
     }
 
-    private static LinkedHashMap<String, Integer> getColIndexes (String fileName) {
+    private static LinkedHashMap<String, Integer> getColIndexes(
+            String fileName) {
         CSVReader reader = null;
         List<String> headerCols = null;
         LinkedHashMap<String, Integer> myHash = new LinkedHashMap<String, Integer>();
         try {
             reader = new CSVReader(new FileReader(fileName));
             headerCols = Arrays.asList(reader.readNext());
-            for (int i = 0; i < headerCols.size(); i++) { 
+            for (int i = 0; i < headerCols.size(); i++) {
                 String column = headerCols.get(i);
                 if (column.startsWith("EUNIS_") && !column.startsWith("EUNIS_N")
                         || column.startsWith("NATFLO")

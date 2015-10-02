@@ -3,6 +3,7 @@ package owlAPI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -11,20 +12,61 @@ import org.semanticweb.owlapi.model.OWLClassExpression;
 public class OWLmap {
 
 	static int ruleNum = 0;
+	public static LinkedHashSet<OntologyClass> eunisClasses = new LinkedHashSet<OntologyClass>();
 
+	public static void addClass(OntologyClass clazz){
+	    OWLmap.eunisClasses.add(clazz);
+	}
+	
+	public static OntologyClass getClass(String clazz){
+	    /* not efficient! */
+	    for (OntologyClass c: OWLmap.eunisClasses){
+	        if (c.getName() == clazz){
+	            return c;
+	        }
+	    }
+	    return null;
+	}
+	
 	public static class owlRuleSet {
 		String clsName;
+		String parent;
+		String description;
+		String descriptionDE;
 		int ruleNumCounter;
 		int ruleNumInSet = 0;
 		HashSet<OWLClassExpression> rules = new HashSet<OWLClassExpression>();
 
 		/* constructor */
-		public owlRuleSet(String clsName, int ruleNumInSet) {
+		public owlRuleSet(String clsName) {//, int ruleNumInSet) {
 			/* starts at 0 */
 			this.clsName = clsName;
-			this.ruleNumCounter = OWLmap.ruleNum;
-			this.ruleNumInSet = ruleNumInSet;
+			//this.ruleNumCounter = OWLmap.ruleNum;
+			//this.ruleNumInSet = ruleNumInSet;
 			OWLmap.ruleNum++;
+		}
+		
+		public void addDescription(String english){
+            this.addDescription(english, "");
+        }
+		
+		public void addDescription(String english, String deutsch){
+		    this.description = english;
+		    this.description = deutsch; 
+		}
+		
+        public String getDescription() {
+            return this.description;
+        }
+        public String getDescriptionDE() {
+            return this.descriptionDE;
+        }
+        
+		public void setParent(String parent){
+		    this.parent = parent;
+		}
+		public String getParent(){
+		    return this.parent;
 		}
 
 		public void addRule(OWLClassExpression rule) {
@@ -52,6 +94,7 @@ public class OWLmap {
 		public int getRuleNum() {
 			return this.ruleNumCounter;
 		}
+
 
 	}
 
