@@ -2,7 +2,7 @@ package owlAPI;
 import java.io.File;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.io.OWLXMLOntologyFormat;
+import org.semanticweb.owlapi.formats.OWLXMLDocumentFormat;
 //import org.semanticweb.owlapi.formats.OWLXMLDocumentFormat;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -51,7 +51,7 @@ public class OntologyCreator {
 
 		OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
 
-		OWLXMLOntologyFormat owlxmlFormat = new OWLXMLOntologyFormat();
+		OWLXMLDocumentFormat owlxmlFormat = new OWLXMLDocumentFormat();
 		/* Save OWL to file*/
 		manager.saveOntology(ontology, owlxmlFormat,
 				IRI.create(owlFile.toURI()));
