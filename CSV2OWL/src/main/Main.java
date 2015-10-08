@@ -10,15 +10,18 @@ import csvToOWLRules.CreateClassesFromCSV;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         File file = new File(".");
         // File[] files = file.listFiles();
         String gDocLocation = file.getCanonicalPath()
                 + "\\src\\get_google_doc\\get_google_doc.py";
         System.out.println("Executing: " + gDocLocation);
+        String pyPath = "C:\\Python27_64\\WinPython-64bit-2.7.9.3\\python-2.7.9.amd64\\";
         Process process = new ProcessBuilder(
-                "C:\\Python27_64\\WinPython-64bit-2.7.9.3\\python-2.7.9.amd64\\python.exe",
+                pyPath + "python.exe",
                 gDocLocation).start();
+        int exitCode = process.waitFor();
+        System.out.println("Exit code:" + exitCode);
         String myFileName = args[0];
         String myOutFile = args[1];
         File owlFile = new File(myOutFile);

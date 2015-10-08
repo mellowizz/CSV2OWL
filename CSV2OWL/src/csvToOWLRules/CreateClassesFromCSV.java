@@ -43,6 +43,7 @@ public class CreateClassesFromCSV {
             /* open file */
             reader = new CSVReader(new FileReader(fileName));
             nameIndex = getColIndexes(fileName);
+            /* create ontology */
             OntologyCreator ontCreate = new OntologyCreator();
             ontCreate.createOntology(iriString, "version_1_0", owlFile);
             IRI ontologyIRI = IRI.create(iriString);
@@ -97,7 +98,7 @@ public class CreateClassesFromCSV {
                     /* paramName is the ObjectProperty */
                     paramName = headerEntry.getKey();
                     paramValue = nextLine[headerEntry.getValue()];
-                    if (paramValue == "" || paramValue == null) {
+                    if (paramValue == "" || paramValue == null || !paramValue.matches("\\w+")) {
                         continue;
                     }
                     /* TODO: refactor */
