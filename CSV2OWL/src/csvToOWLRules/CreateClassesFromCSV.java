@@ -162,13 +162,26 @@ public class CreateClassesFromCSV {
             OWLOntology ontology, IRI ontologyIRI, OWLDataFactory factory,
             String parent, String clazz, String description,
             String descriptionDE) {
+        OWLClass topParentCls = null; 
+        if (parent == "Parameter"){
+            topParentCls = factory
+                    .getOWLClass(IRI.create(ontologyIRI + "#" + "Parameter"));
+        }
         OWLClass parentCls = factory
                 .getOWLClass(IRI.create(ontologyIRI + "#" + parent));
         OWLClass cls = factory
                 .getOWLClass(IRI.create(ontologyIRI + "#" + clazz));
         OWLClass thing = factory.getOWLThing();
-        OWLAxiom classAx = factory.getOWLSubClassOfAxiom(cls, parentCls);
+        OWLAxiom classAx = null;
+        OWLAxiom topParameterAx = null; 
+        if (topParentCls != null){
+            topParameterAx = factory.getOWLSubClassOfAxiom(topParentCls, thing);
+            classAx = factory.getOWLSubClassOfAxiom(cls, topParentCls);
+        } else{
+            classAx = factory.getOWLSubClassOfAxiom(cls, parentCls);
+        }
         OWLAxiom parameterAx = factory.getOWLSubClassOfAxiom(parentCls, thing);
+        
         manager.applyChange(new AddAxiom(ontology, classAx));
         manager.applyChange(new AddAxiom(ontology, parameterAx));
         if (description != null) {
