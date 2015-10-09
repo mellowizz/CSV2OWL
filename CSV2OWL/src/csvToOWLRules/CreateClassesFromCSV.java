@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,6 +23,7 @@ import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
@@ -73,7 +76,7 @@ public class CreateClassesFromCSV {
         OWLDataFactory factory = manager.getOWLDataFactory();
         CSVReader reader = null;
         String[] nextLine = null;
-        String parent = null; // EUNIS";
+        List<String> parents = new ArrayList<String>(); // "Parameter, "EUNIS";
         String description = null;
         String descriptionDE = null;
         String paramName = "Parameter";
@@ -89,8 +92,10 @@ public class CreateClassesFromCSV {
             // skip header
             nextLine = reader.readNext();
             while ((nextLine = reader.readNext()) != null) {
+                /* "eunis" */
+                parents.add("EUNIS");
                 currEunis = createOntoClass(manager, ontology, ontologyIRI,
-                        factory, "EUNIS", nextLine[2], nextLine[3],
+                        factory, parents, nextLine[2], nextLine[3],
                         nextLine[4]);
                 /* loop over parameters and cleanup */
                 for (Map.Entry<String, Integer> headerEntry : nameIndex
@@ -116,19 +121,19 @@ public class CreateClassesFromCSV {
                             e.printStackTrace();
                         }
                     }
-                    parent = "Parameter";
+                    parents.clear();
+                    parents.add("Parameter");
+                    parents.add(paramName);
                     description = "A parameter from " + paramName;
                     descriptionDE = "Ein Parameter von " + paramName;
                     /* create class */
                     createOntoClass(manager, ontology, ontologyIRI, factory,
-                            parent, paramValue, description, descriptionDE);
+                            parents, paramValue, description, descriptionDE);
 
                     System.out.println("paramName: " + paramName);
                     /* create rule */
                     hasParameter = factory.getOWLObjectProperty(
                             IRI.create("#" + "has_" + paramName));
-                    // currEunis = factory.getOWLClass(IRI.create("#" +
-                    // nextLine[2]));
                     parameterValue = factory
                             .getOWLClass(IRI.create("#" + paramValue));
                     myRestriction = factory.getOWLObjectSomeValuesFrom(
@@ -160,30 +165,45 @@ public class CreateClassesFromCSV {
 
     private static OWLClass createOntoClass(OWLOntologyManager manager,
             OWLOntology ontology, IRI ontologyIRI, OWLDataFactory factory,
-            String parent, String clazz, String description,
+            List<String> parents, String clazz, String description,
             String descriptionDE) {
         OWLClass topParentCls = null; 
-        if (parent == "Parameter"){
-            topParentCls = factory
-                    .getOWLClass(IRI.create(ontologyIRI + "#" + "Parameter"));
-        }
-        OWLClass parentCls = factory
-                .getOWLClass(IRI.create(ontologyIRI + "#" + parent));
-        OWLClass cls = factory
-                .getOWLClass(IRI.create(ontologyIRI + "#" + clazz));
+        OWLAxiom subClsOfThing = null;
+        OWLClass parentCls = null;
         OWLClass thing = factory.getOWLThing();
         OWLAxiom classAx = null;
         OWLAxiom topParameterAx = null; 
-        if (topParentCls != null){
-            topParameterAx = factory.getOWLSubClassOfAxiom(topParentCls, thing);
-            classAx = factory.getOWLSubClassOfAxiom(cls, topParentCls);
+        OWLClass cls = null;
+        OWLAxiom parameterAx = null;
+        Set<OWLAxiom> axioms = new HashSet<OWLAxiom>(); 
+       cls = factory
+                .getOWLClass(IRI.create(ontologyIRI + "#" + clazz));
+        if (parents.isEmpty()){
+            System.out.println("ERROR! parent is empty! cls is put under thing");
+            axioms.add(factory.getOWLSubClassOfAxiom(cls, thing));
+            //subClsOfThing = factory.getOWLSubClassOfAxiom(cls, thing);
+        } else if (parents.size() == 1){
+            parentCls = factory
+                    .getOWLClass(IRI.create(ontologyIRI + "#" + parents.remove(0)));
+            axioms.add(factory.getOWLSubClassOfAxiom(cls, parentCls));
+            axioms.add(factory.getOWLSubClassOfAxiom(parentCls, thing));
+            
         } else{
-            classAx = factory.getOWLSubClassOfAxiom(cls, parentCls);
+            parentCls = factory
+                    .getOWLClass(IRI.create(ontologyIRI + "#" + parents.remove(0)));
+            topParentCls = factory
+                    .getOWLClass(IRI.create(ontologyIRI + "#" + parents.remove(0)));
+            axioms.add(factory.getOWLSubClassOfAxiom(parentCls, topParentCls));
+            axioms.add(factory.getOWLSubClassOfAxiom(topParentCls, thing));
         }
-        OWLAxiom parameterAx = factory.getOWLSubClassOfAxiom(parentCls, thing);
         
-        manager.applyChange(new AddAxiom(ontology, classAx));
-        manager.applyChange(new AddAxiom(ontology, parameterAx));
+        //topParameterAx = factory.getOWLSubClassOfAxiom(topParentCls, thing);
+        //classAx = factory.getOWLSubClassOfAxiom(cls, parentCls);
+        //parameterAx = factory.getOWLSubClassOfAxiom(topParentCls, thing);
+        
+        //manager.applyChange(new AddAxiom(ontology, classAx));
+        //manager.applyChange(new AddAxiom(ontology, subClsOfThing));
+        manager.addAxioms(ontology, axioms);
         if (description != null) {
             OWLAnnotation commentAnno = factory.getOWLAnnotation(
                     factory.getRDFSComment(),
