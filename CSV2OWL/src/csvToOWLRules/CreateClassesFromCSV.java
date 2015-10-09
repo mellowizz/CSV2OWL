@@ -124,6 +124,7 @@ public class CreateClassesFromCSV {
                     parents.clear();
                     parents.add("Parameter");
                     parents.add(paramName);
+                    parents.add(paramValue);
                     description = "A parameter from " + paramName;
                     descriptionDE = "Ein Parameter von " + paramName;
                     /* create class */
@@ -175,28 +176,29 @@ public class CreateClassesFromCSV {
         OWLAxiom topParameterAx = null; 
         OWLClass cls = null;
         OWLAxiom parameterAx = null;
-        Set<OWLAxiom> axioms = new HashSet<OWLAxiom>(); 
-       cls = factory
+        Set<OWLAxiom> axioms = new HashSet<OWLAxiom>();
+        OWLClass ancestor = factory.getOWLClass(IRI.create(ontologyIRI + "#" + parents.remove(0)));
+        /* loop over children */
+        cls = factory
                 .getOWLClass(IRI.create(ontologyIRI + "#" + clazz));
         if (parents.isEmpty()){
-            System.out.println("ERROR! parent is empty! cls is put under thing");
-            axioms.add(factory.getOWLSubClassOfAxiom(cls, thing));
-            //subClsOfThing = factory.getOWLSubClassOfAxiom(cls, thing);
+            axioms.add(factory.getOWLSubClassOfAxiom(cls, ancestor));
         } else if (parents.size() == 1){
             parentCls = factory
                     .getOWLClass(IRI.create(ontologyIRI + "#" + parents.remove(0)));
             axioms.add(factory.getOWLSubClassOfAxiom(cls, parentCls));
-            axioms.add(factory.getOWLSubClassOfAxiom(parentCls, thing));
+            axioms.add(factory.getOWLSubClassOfAxiom(parentCls, ancestor));
             
         } else{
-            parentCls = factory
-                    .getOWLClass(IRI.create(ontologyIRI + "#" + parents.remove(0)));
+            System.out.println("more than two parents!");
             topParentCls = factory
                     .getOWLClass(IRI.create(ontologyIRI + "#" + parents.remove(0)));
+            parentCls = factory
+                    .getOWLClass(IRI.create(ontologyIRI + "#" + parents.remove(0)));
             axioms.add(factory.getOWLSubClassOfAxiom(parentCls, topParentCls));
-            axioms.add(factory.getOWLSubClassOfAxiom(topParentCls, thing));
+            axioms.add(factory.getOWLSubClassOfAxiom(topParentCls, ancestor));
         }
-        
+         axioms.add(factory.getOWLSubClassOfAxiom(ancestor, thing));
         //topParameterAx = factory.getOWLSubClassOfAxiom(topParentCls, thing);
         //classAx = factory.getOWLSubClassOfAxiom(cls, parentCls);
         //parameterAx = factory.getOWLSubClassOfAxiom(topParentCls, thing);
