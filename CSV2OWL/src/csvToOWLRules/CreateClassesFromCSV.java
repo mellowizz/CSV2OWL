@@ -17,16 +17,27 @@ import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotation;
+import org.semanticweb.owlapi.model.OWLAnonymousIndividual;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDataHasValue;
+import org.semanticweb.owlapi.model.OWLDataOneOf;
+import org.semanticweb.owlapi.model.OWLDataProperty;
+import org.semanticweb.owlapi.model.OWLDataPropertyAssertionAxiom;
+import org.semanticweb.owlapi.model.OWLDatatype;
+import org.semanticweb.owlapi.model.OWLDatatypeRestriction;
+import org.semanticweb.owlapi.model.OWLLiteral;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
+import org.semanticweb.owlapi.vocab.OWL2Datatype;
+import org.semarglproject.vocab.XSD;
 
 import com.opencsv.CSVReader;
 
@@ -82,11 +93,16 @@ public class CreateClassesFromCSV {
         String paramName = "Parameter";
         String paramValue = null;
         Set<OWLClassExpression> ruleSet = new HashSet<OWLClassExpression>();
+        Set<OWLAxiom> axioms = new HashSet<OWLAxiom>();
         OWLClassExpression myRestriction = null;
         OWLClass currEunis = null;
         OWLClass parameterValue = null;
         OWLObjectProperty hasParameter = null;
-        int intVal = -1;
+        OWLDataProperty hasDataProperty = null;
+        Double doubleVal = -1.0;
+        OWLLiteral literal = null;
+        OWLDatatype booleanDataType = factory.getOWLDatatype(OWL2Datatype.XSD_BOOLEAN.getIRI());
+        OWLDatatypeRestriction newDataRestriction = null;
         try {
             reader = new CSVReader(new FileReader(fileName));
             // skip header
@@ -110,17 +126,49 @@ public class CreateClassesFromCSV {
                     paramValue = paramValue.replaceAll("\\s", "_");
                     if (paramValue.contains("%")) {
                         paramValue = paramValue.replace("%", "");
-                    } else if (paramValue.startsWith("0")
-                            || paramValue.startsWith("1")) {
-                        try {
-                            if (paramValue.contains(",")) {
-                                paramValue = paramValue.replace(",", ".");
-                            }
-                            intVal = Integer.parseInt(paramValue);
-                        } catch (NumberFormatException e) {
-                            e.printStackTrace();
-                        }
                     }
+                    if (paramValue.matches("\\^\\d+")){
+                        if (paramValue.contains(",")) {
+                            try{
+                                paramValue = paramValue.replace(",", ".");
+                                doubleVal = Double.parseDouble(paramValue);
+                            }catch (NumberFormatException e){
+                                e.printStackTrace();
+                            }
+                        } else if (paramValue.startsWith("0")){
+                            //literal = factory.getOWLLiteral("false", booleanDataType);
+                            //OWLDataOneOf blah = factory.getOWLDataOneOf(
+                            //               literal);
+                            factory.getOWLLiteral(true);
+                            //OWLDataHasValue owlBoolean = factory.getOWLDataHasValue(newDataRestriction,XSD.BOOLEAN);
+                            //OWLDataPropertyAssertionAxiom
+                            hasDataProperty = factory.getOWLDataProperty(IRI.create(base + "hasName"));
+                            OWLNamedIndividual currCls = factory.getOWLNamedIndividual("#" + "has_" + paramName);
+                            newDataRestriction = factory.getOWLDatatypeRestriction(hasParameter, literal);
+                            OWLObjectPropertyAssertionAxoim boo = factory.getOWLObjectPropertyAssertionAxiom();
+                            OWLDataPropertyAssertionAxiom dataPropertyAssertion = factory
+                                    .getOWLDataPropertyAssertionAxiom(dataProp, obj,
+                                            literal);
+                            //OWLDataHasValue owlBoolean = factory.getOWLDataHasValue(newDataRestriction, XSD.BOOLEAN);
+                        } else if (paramValue.startsWith("1")){
+                            //literal = factory.getOWLLiteral("true", booleanDataType);
+                            //literal = factory.getOWLLiteral(paramName, booleanDataType);
+                            newDataRestriction = factory.getOWLDatatypeRestriction(, arg1);
+                    
+                        }
+                        if (paramName.contains("max")){
+                            newDataRestriction = factory
+                                    .getOWLDatatypeMaxExclusiveRestriction(doubleVal);
+                        } else if (paramName.contains("min")){
+                            newDataRestriction = factory
+                                    .getOWLDatatypeMinExclusiveRestriction(doubleVal);
+                            
+                        }
+                        
+                    }
+                    /* got number hopefully */
+                    /* paramName contains max/min?! */
+                        
                     parents.clear();
                     parents.add("Parameter");
                     parents.add(paramName);
@@ -137,8 +185,13 @@ public class CreateClassesFromCSV {
                             IRI.create("#" + "has_" + paramName));
                     parameterValue = factory
                             .getOWLClass(IRI.create("#" + paramValue));
+                    /* which restriction */
                     myRestriction = factory.getOWLObjectSomeValuesFrom(
                             hasParameter, parameterValue); // parameterValue);
+                    myRestriction = factory
+                            .getOWLDataSomeValuesFrom(hasDataProperty,
+                                    newDataRestriction); 
+                 
                     ruleSet.add(myRestriction);
                 }
                 /* add all rules */
@@ -169,13 +222,9 @@ public class CreateClassesFromCSV {
             List<String> parents, String clazz, String description,
             String descriptionDE) {
         OWLClass topParentCls = null; 
-        OWLAxiom subClsOfThing = null;
         OWLClass parentCls = null;
         OWLClass thing = factory.getOWLThing();
-        OWLAxiom classAx = null;
-        OWLAxiom topParameterAx = null; 
         OWLClass cls = null;
-        OWLAxiom parameterAx = null;
         Set<OWLAxiom> axioms = new HashSet<OWLAxiom>();
         OWLClass ancestor = factory.getOWLClass(IRI.create(ontologyIRI + "#" + parents.remove(0)));
         /* loop over children */
@@ -198,13 +247,7 @@ public class CreateClassesFromCSV {
             axioms.add(factory.getOWLSubClassOfAxiom(parentCls, topParentCls));
             axioms.add(factory.getOWLSubClassOfAxiom(topParentCls, ancestor));
         }
-         axioms.add(factory.getOWLSubClassOfAxiom(ancestor, thing));
-        //topParameterAx = factory.getOWLSubClassOfAxiom(topParentCls, thing);
-        //classAx = factory.getOWLSubClassOfAxiom(cls, parentCls);
-        //parameterAx = factory.getOWLSubClassOfAxiom(topParentCls, thing);
-        
-        //manager.applyChange(new AddAxiom(ontology, classAx));
-        //manager.applyChange(new AddAxiom(ontology, subClsOfThing));
+        axioms.add(factory.getOWLSubClassOfAxiom(ancestor, thing));
         manager.addAxioms(ontology, axioms);
         if (description != null) {
             OWLAnnotation commentAnno = factory.getOWLAnnotation(
