@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,7 +31,7 @@ public class OWLmap {
 	
 	public static class owlRuleSet {
 		String clsName;
-		String parent;
+		List<String> parent;
 		String description;
 		String descriptionDE;
 		int ruleNumCounter;
@@ -62,10 +63,10 @@ public class OWLmap {
             return this.descriptionDE;
         }
         
-		public void setParent(String parent){
-		    this.parent = parent;
+		public void addParent(String parent){
+		    this.parent.add(parent);
 		}
-		public String getParent(){
+		public List<String> getParent(){
 		    return this.parent;
 		}
 

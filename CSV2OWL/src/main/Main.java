@@ -14,7 +14,6 @@ import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
 import com.opencsv.CSVReader;
 
-import csvToOWLRules.CreateClassesFromCSV;
 import owlAPI.OntologyCreator;
 
 public class Main {

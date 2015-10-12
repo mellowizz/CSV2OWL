@@ -33,6 +33,7 @@ import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.model.SetOntologyID;
 import org.semanticweb.owlapi.util.SimpleIRIMapper;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
+import org.semarglproject.vocab.XSD;
 
 import com.opencsv.CSVReader;
 public class OntologyCreator {
@@ -113,8 +114,11 @@ public class OntologyCreator {
         OWLDataProperty hasDataProperty = null;
         Double doubleVal = -1.0;
         OWLLiteral literal = null;
-        OWLDatatype booleanDataType = dataFactory.getOWLDatatype(OWL2Datatype.XSD_BOOLEAN.getIRI());
+        //OWLDatatype booleanDataType = dataFactory.getOWLDatatype(OWL2Datatype.XSD_BOOLEAN.getIRI());
+        OWLDatatype booleanDataType = dataFactory.getBooleanOWLDatatype();
         OWLDatatypeRestriction newDataRestriction = null;
+        OWLLiteral hasBoolean = null;
+        Double myVal = null;
         try {
             reader = new CSVReader(new FileReader(fileName));
             // skip header
@@ -132,17 +136,62 @@ public class OntologyCreator {
                     /* paramName is the ObjectProperty */
                     paramName = headerEntry.getKey();
                     paramValue = nextLine[headerEntry.getValue()];
-                    if (paramValue == "" || paramValue == null || !paramValue.matches("\\w+")) {
+                    if (paramValue.length() == 0 || paramValue == null || !paramValue.matches("\\w+")) {
                         continue;
                     }
                     /* TODO: refactor */
+                    paramValue = paramValue.trim();
                     paramValue = paramValue.replaceAll("\\s", "_");
                     if (paramValue.contains("%")) {
                         paramValue = paramValue.replace("%", "");
                     }
                     /* got number hopefully */
                     /* paramName contains max/min?! */
-                        
+                    /* fix! */ 
+                      
+                    if (paramValue.matches("^\\d+")){ 
+                        if (paramValue.startsWith("?")) continue;
+                        hasDataProperty = dataFactory.getOWLDataProperty(
+                                IRI.create("#" + "has_" + paramName));
+                        System.out.println("paramName: "+paramValue);
+                        if (paramName.contains("max") || paramName.contains("min")){ 
+                            /* dataType restriction  */
+                            paramValue = paramValue.replace(",", ".");
+                            hasDataProperty = dataFactory.getOWLDataProperty(
+                                    IRI.create("#" + "has_" + paramName));
+                            try {
+                               myVal = Double.parseDouble(paramValue);
+                            } catch (NumberFormatException e){
+                                e.printStackTrace();
+                            }
+                            if (paramName.contains("max")){
+                                newDataRestriction = dataFactory
+                                .getOWLDatatypeMaxExclusiveRestriction(myVal);
+                                myRestriction = dataFactory.getOWLDataSomeValuesFrom(
+                                        hasDataProperty, newDataRestriction); 
+                            } else{
+                                newDataRestriction = dataFactory
+                                .getOWLDatatypeMinExclusiveRestriction(myVal);
+                                myRestriction = dataFactory.getOWLDataSomeValuesFrom(
+                                        hasDataProperty, newDataRestriction); 
+                            }
+                        } else if (paramValue.matches("0")){
+                            myRestriction = dataFactory.getOWLDataSomeValuesFrom(
+                                    hasDataProperty, dataFactory.getOWLDatatype(IRI.create("#" + "false")));// dataFactory.getBooleanOWLDatatype()))); // parameterValue);
+                        } else if (paramValue.matches("1")){
+                            myRestriction = dataFactory.getOWLDataSomeValuesFrom(
+                                    hasDataProperty, dataFactory.getOWLDatatype(IRI.create("#" + "true")));// dataFactory.getBooleanOWLDatatype()))); // parameterValue);
+                        }
+                    /* neither boolean nor starting with a digit */
+                    }else{
+                        hasParameter = dataFactory.getOWLObjectProperty(
+                                IRI.create("#" + "has_" + paramName));
+                        parameterValue = dataFactory
+                                .getOWLClass(IRI.create("#" + paramValue));
+                        /* which restriction */
+                        myRestriction = dataFactory.getOWLObjectSomeValuesFrom(
+                                hasParameter, parameterValue); // parameterValue);
+                    }
                     parents.clear();
                     parents.add("Parameter");
                     parents.add(paramName);
@@ -154,21 +203,10 @@ public class OntologyCreator {
                     createOntoClass(manager, this.ontology, this.ontologyIRI, dataFactory,
                             parents, paramValue, description, descriptionDE);
 
-                    System.out.println("paramName: " + paramName);
                     /* create rule */
-                    hasParameter = dataFactory.getOWLObjectProperty(
-                            IRI.create("#" + "has_" + paramName));
-                    parameterValue = dataFactory
-                            .getOWLClass(IRI.create("#" + paramValue));
-                    /* which restriction */
-                    myRestriction = dataFactory.getOWLObjectSomeValuesFrom(
-                            hasParameter, parameterValue); // parameterValue);
-                    /*
-                    myRestriction = dataFactory
-                            .getOWLDataSomeValuesFrom(hasDataProperty,
-                                    newDataRestriction); 
-                    */
-                    ruleSet.add(myRestriction);
+                    if (myRestriction != null){
+                        ruleSet.add(myRestriction);
+                    }
                 }
                 /* add all rules */
                 manager.addAxiom(ontology,
