@@ -203,17 +203,18 @@ public class OntologyCreator {
                         /* which restriction */
                         myRestriction = dataFactory.getOWLObjectSomeValuesFrom(
                                 hasParameter, parameterValue); // parameterValue);
+                        /* before was outside */
+                        parents.clear();
+                        parents.add("Parameter");
+                        parents.add(paramName);
+                        parents.add(paramValue);
+                        description = "A parameter from " + paramName;
+                        descriptionDE = "Ein Parameter von " + paramName;
+                        /* create class */
+                        /* ontologyIRI */
+                        createOntoClass(manager, this.ontology, this.ontologyIRI, dataFactory,
+                                parents, paramValue, description, descriptionDE);
                     }
-                    parents.clear();
-                    parents.add("Parameter");
-                    parents.add(paramName);
-                    parents.add(paramValue);
-                    description = "A parameter from " + paramName;
-                    descriptionDE = "Ein Parameter von " + paramName;
-                    /* create class */
-                    /* ontologyIRI */
-                    createOntoClass(manager, this.ontology, this.ontologyIRI, dataFactory,
-                            parents, paramValue, description, descriptionDE);
 
                     /* create rule */
                     if (myRestriction != null){
