@@ -20,11 +20,14 @@ import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDataOneOf;
 import org.semanticweb.owlapi.model.OWLDataProperty;
+import org.semanticweb.owlapi.model.OWLDataPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLDatatype;
 import org.semanticweb.owlapi.model.OWLDatatypeRestriction;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyID;
@@ -114,7 +117,6 @@ public class OntologyCreator {
         OWLDataProperty hasDataProperty = null;
         Double doubleVal = -1.0;
         OWLLiteral literal = null;
-        //OWLDatatype booleanDataType = dataFactory.getOWLDatatype(OWL2Datatype.XSD_BOOLEAN.getIRI());
         OWLDatatype booleanDataType = dataFactory.getBooleanOWLDatatype();
         OWLDatatypeRestriction newDataRestriction = null;
         OWLLiteral hasBoolean = null;
@@ -157,8 +159,6 @@ public class OntologyCreator {
                         if (paramName.contains("max") || paramName.contains("min")){ 
                             /* dataType restriction  */
                             paramValue = paramValue.replace(",", ".");
-                            hasDataProperty = dataFactory.getOWLDataProperty(
-                                    IRI.create("#" + "has_" + paramName));
                             try {
                                myVal = Double.parseDouble(paramValue);
                             } catch (NumberFormatException e){
@@ -176,11 +176,23 @@ public class OntologyCreator {
                                         hasDataProperty, newDataRestriction); 
                             }
                         } else if (paramValue.matches("0")){
+                            literal = dataFactory.getOWLLiteral("false",
+                                    booleanDataType);
+                            OWLDataOneOf boolFalse = dataFactory.getOWLDataOneOf(literal);
+                            /*OWLObjectPropertyAssertionAxiom dataPropertyAssertion = dataFactory
+                                    .getOWLObjectPropertyAssertionAxiom(hasDataProperty, dataFactory.getOWLClass(IRI.create("#" + paramValue)),
+                                            literal);*/
+                            //manager.applyChange(new AddAxiom(ontology, dataPropertyAssertion)); 
                             myRestriction = dataFactory.getOWLDataSomeValuesFrom(
-                                    hasDataProperty, dataFactory.getOWLDatatype(IRI.create("#" + "false")));// dataFactory.getBooleanOWLDatatype()))); // parameterValue);
+                                    hasDataProperty, boolFalse); //dataFactory.getOWLDatatype(IRI.create("#" + "false")));// dataFactory.getBooleanOWLDatatype()))); // parameterValue);
                         } else if (paramValue.matches("1")){
+                            literal = dataFactory.getOWLLiteral("true",
+                                    booleanDataType);
+                            OWLDataOneOf boolFalse = dataFactory.getOWLDataOneOf(literal);
                             myRestriction = dataFactory.getOWLDataSomeValuesFrom(
-                                    hasDataProperty, dataFactory.getOWLDatatype(IRI.create("#" + "true")));// dataFactory.getBooleanOWLDatatype()))); // parameterValue);
+                                    hasDataProperty, boolFalse); //dataFactory.getOWLDatatype(IRI.create("#" + "false")));// dataFactory.getBooleanOWLDatatype()))); // parameterValue);
+                            //myRestriction = dataFactory.getOWLDataSomeValuesFrom(
+                            //        hasDataProperty, dataFactory.getOWLDatatype(IRI.create("#" + "true")));// dataFactory.getBooleanOWLDatatype()))); // parameterValue);
                         }
                     /* neither boolean nor starting with a digit */
                     }else{
