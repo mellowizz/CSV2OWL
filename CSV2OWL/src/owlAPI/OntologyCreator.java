@@ -1,4 +1,5 @@
 package owlAPI;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -28,6 +29,7 @@ import org.semanticweb.owlapi.model.OWLDatatypeRestriction;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
+import org.semanticweb.owlapi.model.OWLObjectUnionOf;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyID;
@@ -39,6 +41,7 @@ import org.semanticweb.owlapi.vocab.OWL2Datatype;
 import org.semarglproject.vocab.XSD;
 
 import com.opencsv.CSVReader;
+
 public class OntologyCreator {
     /*
      * 
@@ -48,22 +51,24 @@ public class OntologyCreator {
     OWLOntology ontology;
     private IRI ontoIRI;
     private OWLOntologyID newOntologyID;
-    private SetOntologyID setOntologyID ;
+    private SetOntologyID setOntologyID;
     private IRI versionIRI;
     private IRI ontologyIRI;
     private IRI documentIRI;
-    
+
     public void createOntology(String ontologyIRIasString, String version,
             File owlFile) throws OWLOntologyCreationException,
-            OWLOntologyStorageException {
-        try{
+    OWLOntologyStorageException {
+        try {
             this.manager = OWLManager.createOWLOntologyManager();
-            //PriorityCollection<OWLOntologyIRIMapper> iriMappers = manager.getIRIMappers();
-           this.ontologyIRI = IRI.create(ontologyIRIasString);
+            // PriorityCollection<OWLOntologyIRIMapper> iriMappers =
+            // manager.getIRIMappers();
+            this.ontologyIRI = IRI.create(ontologyIRIasString);
 
-             this.documentIRI = IRI.create(owlFile.toURI());
-            //SimpleIRIMapper mapper = new SimpleIRIMapper(ontologyIRI, documentIRI);
-            //manager.addIRIMapper(mapper);
+            this.documentIRI = IRI.create(owlFile.toURI());
+            // SimpleIRIMapper mapper = new SimpleIRIMapper(ontologyIRI,
+            // documentIRI);
+            // manager.addIRIMapper(mapper);
 
             this.ontology = manager.createOntology(ontologyIRI);
 
@@ -75,31 +80,32 @@ public class OntologyCreator {
             manager.applyChange(setOntologyID);
 
             save(ontologyIRI, ontology, owlFile);
-	    } catch (OWLOntologyCreationException e) {
+        } catch (OWLOntologyCreationException e) {
             System.out.println("Could not load ontology: " + e.getMessage());
         }
-	}
+    }
 
-	public void save(IRI ontologyIRI, OWLOntology ontology, File owlFile)
-			throws OWLOntologyCreationException, OWLOntologyStorageException {
+    public void save(IRI ontologyIRI, OWLOntology ontology, File owlFile)
+            throws OWLOntologyCreationException, OWLOntologyStorageException {
 
-		//OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
+        // OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
 
-		OWLXMLDocumentFormat owlxmlFormat = new OWLXMLDocumentFormat();
-		/* Save OWL to file*/
-		manager.saveOntology(ontology, owlxmlFormat,
-				IRI.create(owlFile.toURI()));
-	}
-	
-	public OWLOntologyID getOWLOntologyID(){
-	    return this.newOntologyID;
-	}
-	public IRI getIRI(){
-	    return this.ontoIRI;
-	}
-	
-    public void createOntologyObject(LinkedHashMap<String, Integer> nameIndex, String fileName) 
-                    throws OWLOntologyCreationException {
+        OWLXMLDocumentFormat owlxmlFormat = new OWLXMLDocumentFormat();
+        /* Save OWL to file */
+        manager.saveOntology(ontology, owlxmlFormat,
+                IRI.create(owlFile.toURI()));
+    }
+
+    public OWLOntologyID getOWLOntologyID() {
+        return this.newOntologyID;
+    }
+
+    public IRI getIRI() {
+        return this.ontoIRI;
+    }
+
+    public void createOntologyObject(LinkedHashMap<String, Integer> nameIndex,
+            String fileName) throws OWLOntologyCreationException {
         CSVReader reader = null;
         OWLDataFactory dataFactory = this.manager.getOWLDataFactory();
         String[] nextLine = null;
@@ -129,16 +135,16 @@ public class OntologyCreator {
                 /* "eunis" */
                 parents.add("EUNIS");
                 // ontologyIRI
-                currEunis = createOntoClass(this.manager, this.ontology, this.ontologyIRI,
-                        dataFactory, parents, nextLine[2], nextLine[3],
-                        nextLine[4]);
+                currEunis = createOntoClass(this.manager, this.ontology,
+                        this.ontologyIRI, dataFactory, parents, nextLine[2],
+                        nextLine[3], nextLine[4]);
                 /* loop over parameters and cleanup */
                 for (Map.Entry<String, Integer> headerEntry : nameIndex
                         .entrySet()) {
                     /* paramName is the ObjectProperty */
                     paramName = headerEntry.getKey();
                     paramValue = nextLine[headerEntry.getValue()];
-                    if (paramValue.length() == 0 || paramValue == null || !paramValue.matches("\\w+")) {
+                    if (paramValue.length() == 0 || paramValue == null || paramValue.contains("?")){
                         continue;
                     }
                     /* TODO: refactor */
@@ -146,85 +152,112 @@ public class OntologyCreator {
                     paramValue = paramValue.replaceAll("\\s", "_");
                     if (paramValue.contains("%")) {
                         paramValue = paramValue.replace("%", "");
-                    }
+                    } 
                     /* got number hopefully */
                     /* paramName contains max/min?! */
-                    /* fix! */ 
-                      
-                    if (paramValue.matches("^\\d+")){ 
-                        if (paramValue.startsWith("?")) continue;
+                    /* fix! */
+
+                    if (paramValue.matches("^\\d+")) {
+                        if (paramValue.startsWith("?"))
+                            continue;
                         hasDataProperty = dataFactory.getOWLDataProperty(
                                 IRI.create("#" + "has_" + paramName));
-                        System.out.println("paramName: "+paramValue);
-                        if (paramName.contains("max") || paramName.contains("min")){ 
-                            /* dataType restriction  */
-                            paramValue = paramValue.replace(",", ".");
+                        System.out.println("paramName: " + paramValue);
+                        if (paramName.contains("max")
+                                || paramName.contains("min")
+                                && !paramName.contains("dominant")) {
+                            /* dataType restriction */
                             try {
-                               myVal = Double.parseDouble(paramValue);
-                            } catch (NumberFormatException e){
+                                paramValue = paramValue.replace(",", ".");
+                                myVal = Double.parseDouble(paramValue);
+                            } catch (NumberFormatException e) {
                                 e.printStackTrace();
                             }
-                            if (paramName.contains("max")){
+                            if (paramName.contains("max")) {
                                 newDataRestriction = dataFactory
-                                .getOWLDatatypeMaxExclusiveRestriction(myVal);
-                                myRestriction = dataFactory.getOWLDataSomeValuesFrom(
-                                        hasDataProperty, newDataRestriction); 
-                            } else{
+                                        .getOWLDatatypeMaxExclusiveRestriction(
+                                                myVal);
+                                myRestriction = dataFactory
+                                        .getOWLDataSomeValuesFrom(
+                                                hasDataProperty,
+                                                newDataRestriction);
+                            } else {
                                 newDataRestriction = dataFactory
-                                .getOWLDatatypeMinExclusiveRestriction(myVal);
-                                myRestriction = dataFactory.getOWLDataSomeValuesFrom(
-                                        hasDataProperty, newDataRestriction); 
+                                        .getOWLDatatypeMinExclusiveRestriction(
+                                                myVal);
+                                myRestriction = dataFactory
+                                        .getOWLDataSomeValuesFrom(
+                                                hasDataProperty,
+                                                newDataRestriction);
                             }
-                        } else if (paramValue.matches("0")){
+                        } else if (paramValue.matches("0")) {
                             literal = dataFactory.getOWLLiteral("false",
                                     booleanDataType);
-                            OWLDataOneOf boolFalse = dataFactory.getOWLDataOneOf(literal);
-                            /*OWLObjectPropertyAssertionAxiom dataPropertyAssertion = dataFactory
-                                    .getOWLObjectPropertyAssertionAxiom(hasDataProperty, dataFactory.getOWLClass(IRI.create("#" + paramValue)),
-                                            literal);*/
-                            //manager.applyChange(new AddAxiom(ontology, dataPropertyAssertion)); 
-                            myRestriction = dataFactory.getOWLDataSomeValuesFrom(
-                                    hasDataProperty, boolFalse); //dataFactory.getOWLDatatype(IRI.create("#" + "false")));// dataFactory.getBooleanOWLDatatype()))); // parameterValue);
-                        } else if (paramValue.matches("1")){
+                            OWLDataOneOf boolFalse = dataFactory
+                                    .getOWLDataOneOf(literal);
+                            myRestriction = dataFactory
+                                    .getOWLDataSomeValuesFrom(hasDataProperty,
+                                            boolFalse); 
+                            
+                        } else if (paramValue.matches("1")) {
                             literal = dataFactory.getOWLLiteral("true",
                                     booleanDataType);
-                            OWLDataOneOf boolFalse = dataFactory.getOWLDataOneOf(literal);
-                            myRestriction = dataFactory.getOWLDataSomeValuesFrom(
-                                    hasDataProperty, boolFalse); //dataFactory.getOWLDatatype(IRI.create("#" + "false")));// dataFactory.getBooleanOWLDatatype()))); // parameterValue);
-                            //myRestriction = dataFactory.getOWLDataSomeValuesFrom(
-                            //        hasDataProperty, dataFactory.getOWLDatatype(IRI.create("#" + "true")));// dataFactory.getBooleanOWLDatatype()))); // parameterValue);
+                            OWLDataOneOf boolFalse = dataFactory
+                                    .getOWLDataOneOf(literal);
+                            myRestriction = dataFactory
+                                    .getOWLDataSomeValuesFrom(hasDataProperty,
+                                            boolFalse);
                         }
-                    /* neither boolean nor starting with a digit */
-                    }else{
-                        hasParameter = dataFactory.getOWLObjectProperty(
+                }else {
+                        /* neither boolean nor starting with a digit */
+                        String[] paramList;
+                        OWLObjectUnionOf totalunion = null;
+                        Set<OWLClassExpression> unionSet = new HashSet<OWLClassExpression>();
+                       hasParameter = dataFactory.getOWLObjectProperty(
                                 IRI.create("#" + "has_" + paramName));
-                        parameterValue = dataFactory
-                                .getOWLClass(IRI.create("#" + paramValue));
-                        /* which restriction */
-                        myRestriction = dataFactory.getOWLObjectSomeValuesFrom(
-                                hasParameter, parameterValue); // parameterValue);
-                        /* before was outside */
-                        parents.clear();
-                        parents.add("Parameter");
-                        parents.add(paramName);
-                        parents.add(paramValue);
-                        description = "A parameter from " + paramName;
-                        descriptionDE = "Ein Parameter von " + paramName;
-                        /* create class */
-                        /* ontologyIRI */
-                        createOntoClass(manager, this.ontology, this.ontologyIRI, dataFactory,
-                                parents, paramValue, description, descriptionDE);
-                    }
+                        if (paramValue.contains("/")){
+                           paramList = paramValue.split("/");
+                           for (String s: paramList){
+                               parameterValue = dataFactory
+                                        .getOWLClass(IRI.create("#" + s));
+                               myRestriction = dataFactory.getOWLObjectSomeValuesFrom(
+                                    hasParameter, parameterValue); // parameterValue);
+                               unionSet.add(myRestriction);
+                           }
+                           totalunion = dataFactory.getOWLObjectUnionOf(unionSet);
+                           manager.addAxiom(ontology, dataFactory.getOWLEquivalentClassesAxiom(currEunis, totalunion));
+
+                        } else{
+                            parameterValue = dataFactory
+                                    .getOWLClass(IRI.create("#" + paramValue));
+                            /* which restriction */
+                            myRestriction = dataFactory.getOWLObjectSomeValuesFrom(
+                                    hasParameter, parameterValue); // parameterValue);
+                        }
+                            /* before was outside */
+                            parents.clear();
+                            parents.add("Parameter");
+                            parents.add(paramName);
+                            parents.add(paramValue);
+                            description = "A parameter from " + paramName;
+                            descriptionDE = "Ein Parameter von " + paramName;
+                            /* create class */
+                            /* ontologyIRI */
+                            createOntoClass(manager, this.ontology,
+                                    this.ontologyIRI, dataFactory, parents,
+                                    paramValue, description, descriptionDE);
+                        }
 
                     /* create rule */
-                    if (myRestriction != null){
+                    if (myRestriction != null) {
                         ruleSet.add(myRestriction);
                     }
                 }
                 /* add all rules */
                 manager.addAxiom(ontology,
                         dataFactory.getOWLEquivalentClassesAxiom(currEunis,
-                                dataFactory.getOWLObjectIntersectionOf(ruleSet)));
+                                dataFactory
+                                .getOWLObjectIntersectionOf(ruleSet)));
                 ruleSet.clear();
             }
             manager.saveOntology(ontology, this.documentIRI);
@@ -248,31 +281,33 @@ public class OntologyCreator {
             OWLOntology ontology, IRI ontologyIRI, OWLDataFactory dataFactory,
             List<String> parents, String clazz, String description,
             String descriptionDE) {
-        OWLClass topParentCls = null; 
+        OWLClass topParentCls = null;
         OWLClass parentCls = null;
         OWLClass thing = dataFactory.getOWLThing();
         OWLClass cls = null;
         Set<OWLAxiom> axioms = new HashSet<OWLAxiom>();
-        OWLClass ancestor = dataFactory.getOWLClass(IRI.create(ontologyIRI + "#" + parents.remove(0)));
+        OWLClass ancestor = dataFactory
+                .getOWLClass(IRI.create(ontologyIRI + "#" + parents.remove(0)));
         /* loop over children */
-        cls = dataFactory
-                .getOWLClass(IRI.create(ontologyIRI + "#" + clazz));
-        if (parents.isEmpty()){
+        cls = dataFactory.getOWLClass(IRI.create(ontologyIRI + "#" + clazz));
+        if (parents.isEmpty()) {
             axioms.add(dataFactory.getOWLSubClassOfAxiom(cls, ancestor));
-        } else if (parents.size() == 1){
-            parentCls = dataFactory
-                    .getOWLClass(IRI.create(ontologyIRI + "#" + parents.remove(0)));
+        } else if (parents.size() == 1) {
+            parentCls = dataFactory.getOWLClass(
+                    IRI.create(ontologyIRI + "#" + parents.remove(0)));
             axioms.add(dataFactory.getOWLSubClassOfAxiom(cls, parentCls));
             axioms.add(dataFactory.getOWLSubClassOfAxiom(parentCls, ancestor));
-            
-        } else{
-            //System.out.println("more than two parents!");
-            topParentCls = dataFactory
-                    .getOWLClass(IRI.create(ontologyIRI + "#" + parents.remove(0)));
-            parentCls = dataFactory
-                    .getOWLClass(IRI.create(ontologyIRI + "#" + parents.remove(0)));
-            axioms.add(dataFactory.getOWLSubClassOfAxiom(parentCls, topParentCls));
-            axioms.add(dataFactory.getOWLSubClassOfAxiom(topParentCls, ancestor));
+
+        } else {
+            // System.out.println("more than two parents!");
+            topParentCls = dataFactory.getOWLClass(
+                    IRI.create(ontologyIRI + "#" + parents.remove(0)));
+            parentCls = dataFactory.getOWLClass(
+                    IRI.create(ontologyIRI + "#" + parents.remove(0)));
+            axioms.add(
+                    dataFactory.getOWLSubClassOfAxiom(parentCls, topParentCls));
+            axioms.add(
+                    dataFactory.getOWLSubClassOfAxiom(topParentCls, ancestor));
         }
         axioms.add(dataFactory.getOWLSubClassOfAxiom(ancestor, thing));
         manager.addAxioms(ontology, axioms);
@@ -280,14 +315,14 @@ public class OntologyCreator {
             OWLAnnotation commentAnno = dataFactory.getOWLAnnotation(
                     dataFactory.getRDFSComment(),
                     dataFactory.getOWLLiteral(description, "en"));
-            OWLAxiom ax = dataFactory.getOWLAnnotationAssertionAxiom(cls.getIRI(),
-                    commentAnno);
+            OWLAxiom ax = dataFactory
+                    .getOWLAnnotationAssertionAxiom(cls.getIRI(), commentAnno);
             manager.applyChange(new AddAxiom(ontology, ax));
             OWLAnnotation commentDE = dataFactory.getOWLAnnotation(
                     dataFactory.getRDFSComment(),
                     dataFactory.getOWLLiteral(descriptionDE, "de"));
-            OWLAxiom axDE = dataFactory.getOWLAnnotationAssertionAxiom(cls.getIRI(),
-                    commentDE);
+            OWLAxiom axDE = dataFactory
+                    .getOWLAnnotationAssertionAxiom(cls.getIRI(), commentDE);
             manager.applyChange(new AddAxiom(ontology, axDE));
         }
         return cls;

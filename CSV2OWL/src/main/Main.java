@@ -81,7 +81,6 @@ public class Main {
             ontCreate.createOntology(iriString, "version_1_0", owlFile);
             IRI ontologyIRI = IRI.create(iriString);
             ontCreate.createOntologyObject(nameIndex, myFileName);
-			//CreateClassesFromCSV.createClassesfromCSV(myFileName); //, 2, owlFile);
         } catch (OWLOntologyCreationException e) {
             throw new RuntimeException(e.getMessage(), e);
         } catch (FileNotFoundException e) {
