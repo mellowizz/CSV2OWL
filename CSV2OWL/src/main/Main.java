@@ -29,7 +29,7 @@ public class Main {
                 String column = headerCols.get(i);
                 if (column.startsWith("EUNIS_") && !column.startsWith("EUNIS_N")
                         || column.startsWith("NATFLO")
-                        || column.startsWith("EAGLE")) {
+                        || column.startsWith("EAGLE")) { //&& !column.startsWith("EAGLE_vegetationType")) {
                     myHash.put(column, i);
                 }
             }
