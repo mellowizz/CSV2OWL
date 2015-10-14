@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -24,12 +23,10 @@ import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLDataOneOf;
 import org.semanticweb.owlapi.model.OWLDataProperty;
-import org.semanticweb.owlapi.model.OWLDataPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLDatatype;
 import org.semanticweb.owlapi.model.OWLDatatypeRestriction;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
-import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLObjectUnionOf;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
@@ -37,13 +34,9 @@ import org.semanticweb.owlapi.model.OWLOntologyID;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.model.SetOntologyID;
-import org.semanticweb.owlapi.util.SimpleIRIMapper;
-import org.semanticweb.owlapi.vocab.OWL2Datatype;
-import org.semarglproject.vocab.XSD;
 
 import com.opencsv.CSVReader;
 
-import dict.defaultDict;
 import owlAPI.OWLmap.owlRuleSet;
 
 public class OntologyCreator {
@@ -62,7 +55,7 @@ public class OntologyCreator {
     private OWLmap owlRulesMap = new OWLmap();
 
     //private defaultDict<String, Set<OWLAxiom>> ontoDict = new defaultDict<String, Set<OWLAxiom>>(ArrayList.class);
-    private defaultDict<String, List<Set<OWLClassExpression>>> ontoDict = new defaultDict<String, List<Set<OWLClassExpression>>>(ArrayList.class);
+    //private defaultDict<String, List<Set<OWLClassExpression>>> ontoDict = new defaultDict<String, List<Set<OWLClassExpression>>>(ArrayList.class);
 
     public void createOntology(String ontologyIRIasString, String version,
             File owlFile) throws OWLOntologyCreationException,
