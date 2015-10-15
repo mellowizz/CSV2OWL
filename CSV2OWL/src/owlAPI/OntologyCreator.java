@@ -104,6 +104,25 @@ public class OntologyCreator {
     public IRI getIRI() {
         return this.ontoIRI;
     }
+    public static String extractNumber(final String str) {                
+
+        if(str == null || str.isEmpty()) return "";
+
+        StringBuilder sb = new StringBuilder();
+        boolean found = false;
+        for(char c : str.toCharArray()){
+            if(Character.isDigit(c) ){
+                sb.append(c);
+                found = true;
+            }else if (Character.compare(c, ',') == 0){
+              sb.append('.');  
+            }else if(found){
+                // If we already found a digit before and this char is not a digit, stop looping
+                break;                
+            }
+        }
+        return sb.toString();
+    }
 
     public void createOntologyObject(LinkedHashMap<String, Integer> nameIndex,
             String fileName) throws OWLOntologyCreationException {
@@ -129,6 +148,7 @@ public class OntologyCreator {
         OWLDatatypeRestriction newDataRestriction = null;
         OWLLiteral hasBoolean = null;
         Double myVal = null;
+        String extractedValue = null;
         try {
             reader = new CSVReader(new FileReader(fileName));
             // skip header
@@ -160,9 +180,12 @@ public class OntologyCreator {
                     /* got number hopefully */
                     /* paramName contains max/min?! */
                     /* fix! */
-                    if (paramValue.matches("^\\d+?,") || paramValue.startsWith("0") || paramValue.startsWith("1")) {
-                        if (paramValue.startsWith("?"))
+                    extractedValue = extractNumber(paramValue);
+                    System.out.println("extractedValue: " + extractedValue);
+                    if (extractedValue != ""){
+                        if (paramValue.startsWith("?")){
                             continue;
+                        }
                         hasDataProperty = dataFactory.getOWLDataProperty(
                                 IRI.create("#" + "has_" + paramName));
                         // System.out.println("paramName: " + paramValue);
@@ -171,8 +194,7 @@ public class OntologyCreator {
                                         && !paramName.contains("dominant")) {
                             /* dataType restriction */
                             try {
-                                paramValue = paramValue.replace(",", ".");
-                                myVal = Double.parseDouble(paramValue);
+                                myVal = Double.parseDouble(extractedValue);
                             } catch (NumberFormatException e) {
                                 e.printStackTrace();
                             }
@@ -286,6 +308,7 @@ public class OntologyCreator {
                     newRules.add(rule);
                     this.owlRulesMap.put(className, newRules);
                 } else{
+                    /* class is already in map */
                     ArrayList<owlRuleSet> existingRules = this.owlRulesMap.pop(className);
                     owlRuleSet the_rules = existingRules.remove(0);
                     ruleSet.addAll(the_rules.getRuleList(className));
