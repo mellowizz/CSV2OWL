@@ -13,6 +13,13 @@ public class OntologyClass {
 	private String descriptionDE;
 	static HashSet<String> classes = new HashSet<String>();
 
+	public boolean addClass(String clazz){
+	    if (!inSet(clazz)){
+	        System.out.println("Class + " + clazz + " is not in classes hash");
+	        return false;
+	    }
+	    return OntologyClass.classes.add(clazz);
+	}
 	public boolean inSet(String clazz){
 	    return classes.contains(clazz);
 	}

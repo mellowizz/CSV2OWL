@@ -136,9 +136,10 @@ public class OntologyCreator {
             while ((nextLine = reader.readNext()) != null) {
                 /* "eunis" */
                 parents.add("EUNIS");
-                currEunis = createOntoClass(this.manager, this.ontology,
+                //addOntoClass
+                /*currEunis = createOntoClass(this.manager, this.ontology,
                         this.ontologyIRI, dataFactory, parents, nextLine[2],
-                        nextLine[3], nextLine[4]);
+                        nextLine[3], nextLine[4]);*/
                 String className = nextLine[2];
                 /* loop over parameters and cleanup */
                 for (Map.Entry<String, Integer> headerEntry : nameIndex
@@ -148,7 +149,6 @@ public class OntologyCreator {
                     paramValue = nextLine[headerEntry.getValue()];
                     if (paramValue.length() == 0 || paramValue == null
                             || paramValue.contains("?")) {
-                        System.out.println("Skipped: " + paramValue);
                         continue;
                     }
                     /* TODO: refactor */
@@ -160,15 +160,14 @@ public class OntologyCreator {
                     /* got number hopefully */
                     /* paramName contains max/min?! */
                     /* fix! */
-
-                    if (paramValue.matches("^\\d+")) {
+                    if (paramValue.matches("^\\d+?,") || paramValue.startsWith("0") || paramValue.startsWith("1")) {
                         if (paramValue.startsWith("?"))
                             continue;
                         hasDataProperty = dataFactory.getOWLDataProperty(
                                 IRI.create("#" + "has_" + paramName));
                         // System.out.println("paramName: " + paramValue);
                         if (paramName.contains("max")
-                                || paramName.contains("min")
+                                || paramName.contains("min") 
                                         && !paramName.contains("dominant")) {
                             /* dataType restriction */
                             try {
@@ -236,10 +235,9 @@ public class OntologyCreator {
                                 descriptionDE = "Ein Parameter von "
                                         + paramName;
                                 /* create class */
-                                /* ontologyIRI */
-                                createOntoClass(manager, this.ontology,
+                                /*createOntoClass(manager, this.ontology,
                                         this.ontologyIRI, dataFactory, parents,
-                                        paramValue, description, descriptionDE);
+                                        paramValue, description, descriptionDE);*/
                             }
                             totalunion = dataFactory
                                     .getOWLObjectUnionOf(unionSet);
@@ -263,10 +261,9 @@ public class OntologyCreator {
                             description = "A parameter from " + paramName;
                             descriptionDE = "Ein Parameter von " + paramName;
                             /* create class */
-                            /* ontologyIRI */
-                            createOntoClass(manager, this.ontology,
-                                    this.ontologyIRI, dataFactory, parents,
-                                    paramValue, description, descriptionDE);
+                            //createOntoClass(manager, this.ontology,
+                            //        this.ontologyIRI, dataFactory, parents,
+                            //        paramValue, description, descriptionDE);
                         }
                     }
 
