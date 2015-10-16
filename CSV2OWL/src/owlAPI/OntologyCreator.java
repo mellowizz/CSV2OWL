@@ -139,6 +139,11 @@ public class OntologyCreator {
             while ((nextLine = reader.readNext()) != null) {
                 /* "eunis" */
                 String className = nextLine[2];
+                String description = nextLine[3];
+                String descriptionDE = nextLine[4];
+                List<String> parents = new ArrayList<String>();
+                parents.add("EUNIS");
+                createOntoClass(parents, className, description, descriptionDE);
                 owlRuleSet owlRules = buildRuleSet(nextLine, nameIndex);
                 if (this.owlRulesMap.get(className) == null) {
                     ArrayList<owlRuleSet> newRules = new ArrayList<owlRuleSet>();
@@ -235,6 +240,7 @@ public class OntologyCreator {
             }
             /* TODO: refactor */
             paramValue = paramValue.trim();
+            //paramValue = paramValue.replaceAll(" \\", "/");
             paramValue = paramValue.replaceAll("\\s", "_");
             if (paramValue.contains("%")) {
                 paramValue = paramValue.replace("%", "");
@@ -242,12 +248,11 @@ public class OntologyCreator {
             /* got number hopefully */
             extractedValue = extractNumber(paramValue);
             // System.out.println("extractedValue: " + extractedValue);
-            if (extractedValue != "" || extractedValue.isEmpty()) {
+            if (!extractedValue.isEmpty()) {
                 hasDataProperty = dataFactory.getOWLDataProperty(
                         IRI.create("#" + "has_" + paramName));
                 // System.out.println("paramName: " + paramValue);
-                if (paramName.contains("max") || paramName.contains("min")
-                        && !paramName.contains("dominant")) {
+                if (paramName.contains("_max") || paramName.contains("_min")){
                     /* dataType restriction */
                     try {
                         myVal = Double.parseDouble(extractedValue);
@@ -296,6 +301,7 @@ public class OntologyCreator {
                                 .getOWLClass(IRI.create("#" + s));
                         myRestriction = dataFactory.getOWLObjectSomeValuesFrom(
                                 hasParameter, parameterValue); // parameterValue);
+                        //owlRules.addRule(myRestriction);
                         unionSet1.add(myRestriction);
                         parents.add("Parameter");
                         parents.add(paramName);
@@ -306,6 +312,7 @@ public class OntologyCreator {
                     }
                     totalunion1 = dataFactory.getOWLObjectUnionOf(unionSet1);
                     owlRules.rules.add(totalunion1);
+                    //owlRules.addAll(unionSet1);
                     myRestriction = null;
                 } else {
                     parameterValue = dataFactory
@@ -334,5 +341,54 @@ public class OntologyCreator {
         }
         return owlRules;
     }
+    private OWLClass createOntoClass(
+            List<String> parents, String clazz, String description,
+            String descriptionDE) {
+        OWLDataFactory dataFactory = this.manager.getOWLDataFactory();
+        OWLClass topParentCls = null;
+        OWLClass parentCls = null;
+        OWLClass thing = dataFactory.getOWLThing();
+        OWLClass cls = null;
+        Set<OWLAxiom> axioms = new HashSet<OWLAxiom>();
+        OWLClass ancestor = dataFactory
+                .getOWLClass(IRI.create(ontologyIRI + "#" + parents.remove(0)));
+        /* loop over children */
+        cls = dataFactory.getOWLClass(IRI.create(ontologyIRI + "#" + clazz));
+        if (parents.isEmpty()) {
+            axioms.add(dataFactory.getOWLSubClassOfAxiom(cls, ancestor));
+        } else if (parents.size() == 1) {
+            parentCls = dataFactory.getOWLClass(
+                    IRI.create(ontologyIRI + "#" + parents.remove(0)));
+            axioms.add(dataFactory.getOWLSubClassOfAxiom(cls, parentCls));
+            axioms.add(dataFactory.getOWLSubClassOfAxiom(parentCls, ancestor));
 
+        } else {
+            // System.out.println("more than two parents!");
+            topParentCls = dataFactory.getOWLClass(
+                    IRI.create(ontologyIRI + "#" + parents.remove(0)));
+            parentCls = dataFactory.getOWLClass(
+                    IRI.create(ontologyIRI + "#" + parents.remove(0)));
+            axioms.add(
+                    dataFactory.getOWLSubClassOfAxiom(parentCls, topParentCls));
+            axioms.add(
+                    dataFactory.getOWLSubClassOfAxiom(topParentCls, ancestor));
+        }
+        axioms.add(dataFactory.getOWLSubClassOfAxiom(ancestor, thing));
+        manager.addAxioms(ontology, axioms);
+        if (description != null) {
+            OWLAnnotation commentAnno = dataFactory.getOWLAnnotation(
+                    dataFactory.getRDFSComment(),
+                    dataFactory.getOWLLiteral(description, "en"));
+            OWLAxiom ax = dataFactory
+                    .getOWLAnnotationAssertionAxiom(cls.getIRI(), commentAnno);
+            manager.applyChange(new AddAxiom(ontology, ax));
+            OWLAnnotation commentDE = dataFactory.getOWLAnnotation(
+                    dataFactory.getRDFSComment(),
+                    dataFactory.getOWLLiteral(descriptionDE, "de"));
+            OWLAxiom axDE = dataFactory
+                    .getOWLAnnotationAssertionAxiom(cls.getIRI(), commentDE);
+            manager.applyChange(new AddAxiom(ontology, axDE));
+        }
+        return cls;
+    }
 }
