@@ -53,6 +53,7 @@ public class OntologyCreator {
     private IRI ontologyIRI;
     private IRI documentIRI;
     private OWLmap owlRulesMap = new OWLmap();
+    private Set<OWLClass> definedOWLClass = new HashSet<OWLClass>();
 
     public void createOntology(String ontologyIRIasString, String version,
             File owlFile) throws OWLOntologyCreationException,
@@ -173,7 +174,6 @@ public class OntologyCreator {
         OWLClass parentCls = null;
         OWLDataFactory dataFactory = this.manager.getOWLDataFactory();
         OWLClass thing = dataFactory.getOWLThing();
-        Set<OWLAxiom> axioms = new HashSet<OWLAxiom>();
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry) it.next();
             String currCls = (String) pair.getKey();
@@ -181,8 +181,8 @@ public class OntologyCreator {
             ArrayList<owlRuleSet> currRuleset = (ArrayList<owlRuleSet>) pair
                     .getValue();
             List<String> currParents = currRuleset.get(0).getParent();
-            OWLClass ancestor = dataFactory
-                    .getOWLClass(IRI.create("#" + currParents.remove(0)));
+            //OWLClass ancestor = dataFactory
+            //        .getOWLClass(IRI.create("#" + currParents.remove(0)));
 
             for (int i = 0; i < currRuleset.size(); i++) {
                 firstRuleSet = dataFactory.getOWLObjectIntersectionOf(
@@ -305,10 +305,12 @@ public class OntologyCreator {
                         unionSet1.add(myRestriction);
                         parents.add("Parameter");
                         parents.add(paramName);
-                        parents.add(paramValue);
+                        //parents.add(paramValue);
                         description = "A parameter from " + paramName;
                         descriptionDE = "Ein Parameter von " + paramName;
                         /* create class */
+                        createOntoClass(parents, s, description, descriptionDE);
+                        parents.clear();
                     }
                     totalunion1 = dataFactory.getOWLObjectUnionOf(unionSet1);
                     owlRules.rules.add(totalunion1);
@@ -327,9 +329,7 @@ public class OntologyCreator {
                     description = "A parameter from " + paramName;
                     descriptionDE = "Ein Parameter von " + paramName;
                     /* create class */
-                    // createOntoClass(manager, this.ontology,
-                    // this.ontologyIRI, dataFactory, parents,
-                    // paramValue, description, descriptionDE);
+                    createOntoClass(parents, paramValue, description, descriptionDE);
                 }
             }
 
@@ -354,6 +354,9 @@ public class OntologyCreator {
                 .getOWLClass(IRI.create(ontologyIRI + "#" + parents.remove(0)));
         /* loop over children */
         cls = dataFactory.getOWLClass(IRI.create(ontologyIRI + "#" + clazz));
+        if (this.definedOWLClass.contains(cls)){
+            return cls;
+        }
         if (parents.isEmpty()) {
             axioms.add(dataFactory.getOWLSubClassOfAxiom(cls, ancestor));
         } else if (parents.size() == 1) {
@@ -389,6 +392,7 @@ public class OntologyCreator {
                     .getOWLAnnotationAssertionAxiom(cls.getIRI(), commentDE);
             manager.applyChange(new AddAxiom(ontology, axDE));
         }
+        this.definedOWLClass.add(cls);
         return cls;
     }
 }
