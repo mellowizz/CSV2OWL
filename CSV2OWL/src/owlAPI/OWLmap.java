@@ -3,6 +3,7 @@ package owlAPI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class OWLmap {
 	
 	public static class owlRuleSet {
 		String clsName;
-		List<String> parent;
+		List<String> parents;
 		String description;
 		String descriptionDE;
 		int ruleNumCounter;
@@ -47,11 +48,12 @@ public class OWLmap {
 		HashSet<OWLClassExpression> rules = new HashSet<OWLClassExpression>();
 
 		/* constructor */
-		public owlRuleSet(String clsName) {//, int ruleNumInSet) {
+		public owlRuleSet(String clsName, List<String> parents, String description, String descriptionDE) {
 			/* starts at 0 */
 			this.clsName = clsName;
-			//this.ruleNumCounter = OWLmap.ruleNum;
-			//this.ruleNumInSet = ruleNumInSet;
+			this.parents = parents;
+			this.description = description;
+			this.description = descriptionDE;
 			OWLmap.ruleNum++;
 		}
 		
@@ -72,10 +74,10 @@ public class OWLmap {
         }
         
 		public void addParent(String parent){
-		    this.parent.add(parent);
+		    this.parents.add(parent);
 		}
 		public List<String> getParent(){
-		    return this.parent;
+		    return this.parents;
 		}
 
 		public void addRule(OWLClassExpression rule) {
@@ -104,11 +106,17 @@ public class OWLmap {
 			return this.ruleNumCounter;
 		}
 
-
+        public void addParents(List<String> parents) {
+           this.parents = parents; 
+        }
 	}
 
 	/* owlRules methods have access to this! */
-	Map<String, ArrayList<owlRuleSet>> map = new HashMap<String, ArrayList<owlRuleSet>>();
+	public Map<String, ArrayList<owlRuleSet>> map = new HashMap<String, ArrayList<owlRuleSet>>();
+	
+	public Iterator itor (){
+	    return map.entrySet().iterator();
+	}
 
 	public ArrayList<owlRuleSet> put(String key, ArrayList<owlRuleSet> value) {
 		return map.put(key, value);
