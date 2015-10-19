@@ -35,10 +35,13 @@ import org.semanticweb.owlapi.model.OWLOntologyID;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.model.SetOntologyID;
+import org.semanticweb.owlapi.reasoner.Node;
+import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import com.opencsv.CSVReader;
 
 import owlAPI.OWLmap.owlRuleSet;
+import uk.ac.manchester.cs.factplusplus.owlapiv3.FaCTPlusPlusReasonerFactory;
 
 public class OntologyCreator {
     /*
@@ -153,6 +156,12 @@ public class OntologyCreator {
                 } else {
                     ArrayList<owlRuleSet> existingRules = this.owlRulesMap
                             .pop(className);
+                  /*  for (owlRuleSet currRule : existingRules){
+                       Set<OWLClassExpression> blah = currRule.getRuleList(className);
+                       for (OWLClassExpression c :blah){
+                           Node<OWLClass> curr = factplusplus.getEquivalentClasses(c);
+                           System.out.println(curr.toString());
+                       }*/
                     existingRules.add(owlRules);
                     this.owlRulesMap.put(className, existingRules);
                 }
@@ -191,6 +200,11 @@ public class OntologyCreator {
             }
             totalunion = dataFactory.getOWLObjectUnionOf(unionSet);
             unionSet.clear();
+            //OWLReasoner factplusplus = new FaCTPlusPlusReasonerFactory()
+            //    .createReasoner(this.ontology);
+            //factplusplus.isEntailed(dataFactory
+            //        .getOWLEquivalentClassesAxiom(owlCls, totalunion));
+            
             manager.addAxiom(ontology, dataFactory
                     .getOWLEquivalentClassesAxiom(owlCls, totalunion));
         }

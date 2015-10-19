@@ -41,7 +41,7 @@ public class Main {
 
 	public static void main(String[] args) throws IOException {
 		File file = new File(".");
-		String gDocLocation = file.getCanonicalPath();
+		String gDocLocation = file.getCanonicalPath() + "/src/get_google_doc/get_google_doc.py";
 		String workingDirectory = null;
 		String OS = (System.getProperty("os.name")).toUpperCase();
 		//to determine what the workingDirectory is.
