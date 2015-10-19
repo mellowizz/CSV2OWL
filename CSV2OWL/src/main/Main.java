@@ -29,7 +29,7 @@ public class Main {
                 String column = headerCols.get(i);
                 if (column.startsWith("EUNIS_") && !column.startsWith("EUNIS_N")
                         || column.startsWith("NATFLO")
-                        || column.startsWith("EAGLE")) { //&& !column.startsWith("EAGLE_vegetationType")) {
+                        || column.startsWith("EAGLE")) { 
                     myHash.put(column, i);
                 }
             }
@@ -39,36 +39,31 @@ public class Main {
         return myHash;
     }
 
-	public static void main(String[] args) throws IOException {
-		File file = new File(".");
-		String gDocLocation = file.getCanonicalPath() + "/src/get_google_doc/get_google_doc.py";
-		String workingDirectory = null;
-		String OS = (System.getProperty("os.name")).toUpperCase();
-		//to determine what the workingDirectory is.
-		//if it is some version of Windows
-		String pythonLoc = null;
-		if (OS.contains("WIN"))
-		{
-			workingDirectory = System.getenv("AppData");
-			pythonLoc = 
-					"C:/Python27_64/WinPython-64bit-2.7.9.3/python-2.7.9.amd64/python.exe";
-		
-		}
-		//Otherwise, we assume Linux or Mac
-		else
-		{
-			workingDirectory = System.getProperty("user.home");
-			pythonLoc = "python2";
-		}
-		System.out.println("Executing: " + gDocLocation);
-		
-        Process process = new ProcessBuilder(pythonLoc,
-                    gDocLocation).start();
-		String myFileName = args[0];
-		String myOutFile = args[1];
-		File owlFile = new File(myOutFile);
+    public static void main(String[] args) throws IOException {
+        File file = new File(".");
+        String gDocLocation = file.getCanonicalPath()
+                + "/src/get_google_doc/get_google_doc.py";
+        String workingDirectory = null;
+        String OS = (System.getProperty("os.name")).toUpperCase();
+        String pythonLoc = null;
+        if (OS.contains("WIN")) {
+            workingDirectory = System.getenv("AppData");
+            pythonLoc = "C:/Python27_64/WinPython-64bit-2.7.9.3/python-2.7.9.amd64/python.exe";
+
+        }
+        // Otherwise, we assume Linux or Mac
+        else {
+            workingDirectory = System.getProperty("user.home");
+            pythonLoc = "python2";
+        }
+        System.out.println("Executing: " + gDocLocation);
+
+        Process process = new ProcessBuilder(pythonLoc, gDocLocation).start();
+        String myFileName = args[0];
+        String myOutFile = args[1];
+        File owlFile = new File(myOutFile);
         CSVReader reader = null;
-		try {
+        try {
             /* Read from CSV */
             LinkedHashMap<String, Integer> nameIndex = null;
             String iriString = "http://www.user.tu-berlin.de/niklasmoran/EUNIS/"
@@ -79,19 +74,16 @@ public class Main {
             /* create ontology */
             OntologyCreator ontCreate = new OntologyCreator();
             ontCreate.createOntology(iriString, "version_1_0", owlFile);
-            IRI ontologyIRI = IRI.create(iriString);
             ontCreate.createOntologyObject(nameIndex, myFileName);
         } catch (OWLOntologyCreationException e) {
             throw new RuntimeException(e.getMessage(), e);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e.getMessage(), e);
-		} catch (OWLOntologyStorageException e2) {
-			throw new RuntimeException(e2.getMessage(), e2);
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
+        } catch (OWLOntologyStorageException e2) {
+            throw new RuntimeException(e2.getMessage(), e2);
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        } finally {
             try {
                 if (reader != null) {
                     reader.close();
@@ -100,5 +92,5 @@ public class Main {
                 e.printStackTrace();
             }
         }
-	}
+    }
 }

@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.semanticweb.HermiT.structural.OWLAxioms;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.formats.OWLXMLDocumentFormat;
 import org.semanticweb.owlapi.model.AddAxiom;
@@ -35,13 +34,10 @@ import org.semanticweb.owlapi.model.OWLOntologyID;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.model.SetOntologyID;
-import org.semanticweb.owlapi.reasoner.Node;
-import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import com.opencsv.CSVReader;
 
 import owlAPI.OWLmap.owlRuleSet;
-import uk.ac.manchester.cs.factplusplus.owlapiv3.FaCTPlusPlusReasonerFactory;
 
 public class OntologyCreator {
     /*
@@ -68,9 +64,6 @@ public class OntologyCreator {
             this.ontologyIRI = IRI.create(ontologyIRIasString);
 
             this.documentIRI = IRI.create(owlFile.toURI());
-            // SimpleIRIMapper mapper = new SimpleIRIMapper(ontologyIRI,
-            // documentIRI);
-            // manager.addIRIMapper(mapper);
 
             this.ontology = manager.createOntology(ontologyIRI);
 
@@ -131,9 +124,9 @@ public class OntologyCreator {
         return foundDigit;
     }
 
-    public void createOntologyObject(
-            LinkedHashMap<String, Integer> nameIndex, String fileName)
-                    throws OWLOntologyCreationException, OWLOntologyStorageException {
+    public void createOntologyObject(LinkedHashMap<String, Integer> nameIndex,
+            String fileName) throws OWLOntologyCreationException,
+    OWLOntologyStorageException {
         CSVReader reader = null;
         String[] nextLine = null;
         try {
@@ -156,12 +149,14 @@ public class OntologyCreator {
                 } else {
                     ArrayList<owlRuleSet> existingRules = this.owlRulesMap
                             .pop(className);
-                  /*  for (owlRuleSet currRule : existingRules){
-                       Set<OWLClassExpression> blah = currRule.getRuleList(className);
-                       for (OWLClassExpression c :blah){
-                           Node<OWLClass> curr = factplusplus.getEquivalentClasses(c);
-                           System.out.println(curr.toString());
-                       }*/
+                    /*
+                     * for (owlRuleSet currRule : existingRules){
+                     * Set<OWLClassExpression> blah =
+                     * currRule.getRuleList(className); for (OWLClassExpression
+                     * c :blah){ Node<OWLClass> curr =
+                     * factplusplus.getEquivalentClasses(c);
+                     * System.out.println(curr.toString()); }
+                     */
                     existingRules.add(owlRules);
                     this.owlRulesMap.put(className, existingRules);
                 }
@@ -177,22 +172,16 @@ public class OntologyCreator {
         OWLClass owlCls = null;
         // owlCls.getIRI().getShortForm();
         OWLObjectUnionOf totalunion = null;
-        Iterator it = this.owlRulesMap.map.entrySet().iterator(); // .itor(); // entrySet().iterator();
+        Iterator it = this.owlRulesMap.map.entrySet().iterator(); // .itor(); //
+        // entrySet().iterator();
         Set<OWLClassExpression> unionSet = new HashSet<OWLClassExpression>();
-        OWLClass topParentCls = null;
-        OWLClass parentCls = null;
         OWLDataFactory dataFactory = this.manager.getOWLDataFactory();
-        OWLClass thing = dataFactory.getOWLThing();
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry) it.next();
             String currCls = (String) pair.getKey();
             owlCls = dataFactory.getOWLClass(IRI.create("#" + currCls));
             ArrayList<owlRuleSet> currRuleset = (ArrayList<owlRuleSet>) pair
                     .getValue();
-            List<String> currParents = currRuleset.get(0).getParent();
-            //OWLClass ancestor = dataFactory
-            //        .getOWLClass(IRI.create("#" + currParents.remove(0)));
-
             for (int i = 0; i < currRuleset.size(); i++) {
                 firstRuleSet = dataFactory.getOWLObjectIntersectionOf(
                         currRuleset.get(i).getRuleList(currCls));
@@ -200,11 +189,7 @@ public class OntologyCreator {
             }
             totalunion = dataFactory.getOWLObjectUnionOf(unionSet);
             unionSet.clear();
-            //OWLReasoner factplusplus = new FaCTPlusPlusReasonerFactory()
-            //    .createReasoner(this.ontology);
-            //factplusplus.isEntailed(dataFactory
-            //        .getOWLEquivalentClassesAxiom(owlCls, totalunion));
-            
+
             manager.addAxiom(ontology, dataFactory
                     .getOWLEquivalentClassesAxiom(owlCls, totalunion));
         }
@@ -226,7 +211,6 @@ public class OntologyCreator {
         String descriptionDE = null;
         String paramName = "Parameter";
         String paramValue = null;
-        Set<OWLAxiom> axioms = new HashSet<OWLAxiom>();
         OWLClassExpression myRestriction = null;
         OWLClass parameterValue = null;
         OWLObjectProperty hasParameter = null;
@@ -254,7 +238,7 @@ public class OntologyCreator {
             }
             /* TODO: refactor */
             paramValue = paramValue.trim();
-            //paramValue = paramValue.replaceAll(" \\", "/");
+            // paramValue = paramValue.replaceAll(" \\", "/");
             paramValue = paramValue.replaceAll("\\s", "_");
             if (paramValue.contains("%")) {
                 paramValue = paramValue.replace("%", "");
@@ -266,7 +250,7 @@ public class OntologyCreator {
                 hasDataProperty = dataFactory.getOWLDataProperty(
                         IRI.create("#" + "has_" + paramName));
                 // System.out.println("paramName: " + paramValue);
-                if (paramName.contains("_max") || paramName.contains("_min")){
+                if (paramName.contains("_max") || paramName.contains("_min")) {
                     /* dataType restriction */
                     try {
                         myVal = Double.parseDouble(extractedValue);
@@ -315,11 +299,11 @@ public class OntologyCreator {
                                 .getOWLClass(IRI.create("#" + s));
                         myRestriction = dataFactory.getOWLObjectSomeValuesFrom(
                                 hasParameter, parameterValue); // parameterValue);
-                        //owlRules.addRule(myRestriction);
+                        // owlRules.addRule(myRestriction);
                         unionSet1.add(myRestriction);
                         parents.add("Parameter");
                         parents.add(paramName);
-                        //parents.add(paramValue);
+                        // parents.add(paramValue);
                         description = "A parameter from " + paramName;
                         descriptionDE = "Ein Parameter von " + paramName;
                         /* create class */
@@ -328,7 +312,7 @@ public class OntologyCreator {
                     }
                     totalunion1 = dataFactory.getOWLObjectUnionOf(unionSet1);
                     owlRules.rules.add(totalunion1);
-                    //owlRules.addAll(unionSet1);
+                    // owlRules.addAll(unionSet1);
                     myRestriction = null;
                 } else {
                     parameterValue = dataFactory
@@ -343,21 +327,20 @@ public class OntologyCreator {
                     description = "A parameter from " + paramName;
                     descriptionDE = "Ein Parameter von " + paramName;
                     /* create class */
-                    createOntoClass(parents, paramValue, description, descriptionDE);
+                    createOntoClass(parents, paramValue, description,
+                            descriptionDE);
                 }
             }
-
             /* create rule */
             if (myRestriction != null) {
-                // ruleSet.add(myRestriction);
                 owlRules.addRule(myRestriction);
             }
         }
         return owlRules;
     }
-    private OWLClass createOntoClass(
-            List<String> parents, String clazz, String description,
-            String descriptionDE) {
+
+    private OWLClass createOntoClass(List<String> parents, String clazz,
+            String description, String descriptionDE) {
         OWLDataFactory dataFactory = this.manager.getOWLDataFactory();
         OWLClass topParentCls = null;
         OWLClass parentCls = null;
@@ -368,7 +351,7 @@ public class OntologyCreator {
                 .getOWLClass(IRI.create(ontologyIRI + "#" + parents.remove(0)));
         /* loop over children */
         cls = dataFactory.getOWLClass(IRI.create(ontologyIRI + "#" + clazz));
-        if (this.definedOWLClass.contains(cls)){
+        if (this.definedOWLClass.contains(cls)) {
             return cls;
         }
         if (parents.isEmpty()) {
