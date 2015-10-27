@@ -11,7 +11,10 @@ import sys
 import io
 import os
 #from os.path import expanduser
+'''master version '''
 response = requests.get('https://docs.google.com/feeds/download/spreadsheets/Export?key=1DetLdQWehIFy31pFduqU20o_EO8KziKxWiORkhXzzQc&exportFormat=csv&gid=403134972', stream=True)
+''' simons version'''
+#reponse = requests.get('https://docs.google.com/feeds/download/spreadsheets/Export?key=1oa4IThXlJa-1VXXtQs5AApHl0qEyPZd-p5RPiy6P9vk&exportFormat=csv&gid=1755891071', stream=True)
 response.raise_for_status()
 
 #home = os.path.expanduser("~")
