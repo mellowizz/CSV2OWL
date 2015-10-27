@@ -48,7 +48,8 @@ public class Main {
         String pythonLoc = null;
         if (OS.contains("WIN")) {
             workingDirectory = System.getenv("AppData");
-            pythonLoc = "C:/Python27_64/WinPython-64bit-2.7.9.3/python-2.7.9.amd64/python.exe";
+            //pythonLoc = "C:/Python27_64/WinPython-64bit-2.7.9.3/python-2.7.9.amd64/python.exe";
+            pythonLoc = System.getenv("PYTHONPATH") + "/python.exe"; //"%PYTHONPATH%";
 
         }
         // Otherwise, we assume Linux or Mac
