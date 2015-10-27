@@ -43,23 +43,21 @@ public class Main {
         File file = new File(".");
         String gDocLocation = file.getCanonicalPath()
                 + "/src/get_google_doc/get_google_doc.py";
-        String workingDirectory = null;
         String OS = (System.getProperty("os.name")).toUpperCase();
         String pythonLoc = null;
+        String gDocFileName = file.getCanonicalPath() + "/data/rlp_key_latest.csv";
         if (OS.contains("WIN")) {
-            workingDirectory = System.getenv("AppData");
-            //pythonLoc = "C:/Python27_64/WinPython-64bit-2.7.9.3/python-2.7.9.amd64/python.exe";
-            pythonLoc = System.getenv("PYTHONPATH") + "/python.exe"; //"%PYTHONPATH%";
+            pythonLoc = System.getenv("PYTHONPATH") + "/python.exe"; 
 
         }
         // Otherwise, we assume Linux or Mac
         else {
-            workingDirectory = System.getProperty("user.home");
             pythonLoc = "python2";
         }
         System.out.println("Executing: " + gDocLocation);
-
-        Process process = new ProcessBuilder(pythonLoc, gDocLocation).start();
+        System.out.println("Saving documnet to: " + gDocFileName);
+        Process process = new ProcessBuilder(pythonLoc, gDocLocation,
+                gDocFileName).start();
         String myFileName = args[0];
         String myOutFile = args[1];
         File owlFile = new File(myOutFile);
