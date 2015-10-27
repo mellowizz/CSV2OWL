@@ -41,11 +41,13 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         File file = new File(".");
+        String gDocFileName = args[0];
+        String myOutFile = args[1];
         String gDocLocation = file.getCanonicalPath()
                 + "/src/get_google_doc/get_google_doc.py";
         String OS = (System.getProperty("os.name")).toUpperCase();
         String pythonLoc = null;
-        String gDocFileName = file.getCanonicalPath() + "/data/rlp_key_latest.csv";
+        //String gDocFileName = file.getCanonicalPath() + "/data/rlp_key_latest.csv";
         if (OS.contains("WIN")) {
             pythonLoc = System.getenv("PYTHONPATH") + "/python.exe"; 
 
@@ -55,11 +57,9 @@ public class Main {
             pythonLoc = "python2";
         }
         System.out.println("Executing: " + gDocLocation);
-        System.out.println("Saving documnet to: " + gDocFileName);
+        System.out.println("Saving document to: " + gDocFileName);
         Process process = new ProcessBuilder(pythonLoc, gDocLocation,
                 gDocFileName).start();
-        String myFileName = args[0];
-        String myOutFile = args[1];
         File owlFile = new File(myOutFile);
         CSVReader reader = null;
         try {
@@ -68,12 +68,12 @@ public class Main {
             String iriString = "http://www.user.tu-berlin.de/niklasmoran/EUNIS/"
                     + owlFile.getName().trim();
             /* open file */
-            reader = new CSVReader(new FileReader(myFileName));
-            nameIndex = getColIndexes(myFileName);
+            reader = new CSVReader(new FileReader(gDocFileName));
+            nameIndex = getColIndexes(gDocFileName);
             /* create ontology */
             OntologyCreator ontCreate = new OntologyCreator();
             ontCreate.createOntology(iriString, "version_1_0", owlFile);
-            ontCreate.createOntologyObject(nameIndex, myFileName);
+            ontCreate.createOntologyObject(nameIndex, gDocFileName);
         } catch (OWLOntologyCreationException e) {
             throw new RuntimeException(e.getMessage(), e);
         } catch (FileNotFoundException e) {
