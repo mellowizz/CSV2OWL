@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
@@ -21,7 +20,8 @@ public class Main {
             String fileName) {
         CSVReader reader = null;
         List<String> headerCols = null;
-        LinkedHashMap<String, Integer> myHash = new LinkedHashMap<String, Integer>();
+        LinkedHashMap<String, Integer> myHash = 
+                new LinkedHashMap<String, Integer>();
         try {
             reader = new CSVReader(new FileReader(fileName));
             headerCols = Arrays.asList(reader.readNext());
@@ -39,7 +39,7 @@ public class Main {
         return myHash;
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         File file = new File(".");
         String gDocFileName = args[0];
         String myOutFile = args[1];
@@ -47,7 +47,6 @@ public class Main {
                 + "/src/get_google_doc/get_google_doc.py";
         String OS = (System.getProperty("os.name")).toUpperCase();
         String pythonLoc = null;
-        //String gDocFileName = file.getCanonicalPath() + "/data/rlp_key_latest.csv";
         if (OS.contains("WIN")) {
             pythonLoc = System.getenv("PYTHONPATH") + "/python.exe"; 
 
@@ -60,6 +59,14 @@ public class Main {
         System.out.println("Saving document to: " + gDocFileName);
         Process process = new ProcessBuilder(pythonLoc, gDocLocation,
                 gDocFileName).start();
+        int exitCode = process.waitFor();
+        String message = "";
+        if (exitCode != 0){
+           message = "Failed to get google doc file!";
+        } else{
+           message = "Document saved to: " + gDocFileName + " sucessfully"; 
+        }
+        System.out.println(message);
         File owlFile = new File(myOutFile);
         CSVReader reader = null;
         try {
