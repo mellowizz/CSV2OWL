@@ -8,6 +8,11 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
@@ -39,7 +44,24 @@ public class Main {
         return myHash;
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException,
+                                                  InterruptedException{
+        Options options = new Options ();
+        options.addOption("f", true, "file or URL of OWL file location");
+       
+        CommandLineParser parser = new DefaultParser();
+        String baseOWLFile = ""; /* make some default? */
+        try {
+            
+            CommandLine cmd = parser.parse( options, args );
+            if (cmd.hasOption("f")){
+                // process option
+                baseOWLFile = cmd.getOptionValue("f"); 
+            }
+        }
+        catch (ParseException exp){
+           System.err.println("Parsing failed. Reason: " + exp.getMessage());
+        }
         File file = new File(".");
         String gDocFileName = args[0];
         String myOutFile = args[1];
