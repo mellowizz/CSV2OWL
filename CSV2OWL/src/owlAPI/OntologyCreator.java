@@ -69,14 +69,26 @@ public class OntologyCreator {
 
             this.versionIRI = IRI.create(ontologyIRI + "/version1");
 
-            this.newOntologyID = new OWLOntologyID(ontologyIRI, versionIRI);
+            //this.newOntologyID = new OWLOntologyID(ontologyIRI, versionIRI);
 
-            this.setOntologyID = new SetOntologyID(ontology, newOntologyID);
-            manager.applyChange(setOntologyID);
+            //this.setOntologyID = new SetOntologyID(ontology, newOntologyID);
+            //manager.applyChange(setOntologyID);
 
             save(ontologyIRI, ontology, owlFile);
         } catch (OWLOntologyCreationException e) {
             System.out.println("Could not load ontology: " + e.getMessage());
+        }
+    }
+    
+    public void loadOntology(File file){
+        try {
+            OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
+
+            this.documentIRI = IRI.create(owlFile.toURI());
+            this.ontology = manager.loadOntologyFromOntologyDocument(file);
+
+        } catch (OWLOntologyCreationException e) {
+            e.printStackTrace();
         }
     }
 
@@ -149,14 +161,6 @@ public class OntologyCreator {
                 } else {
                     ArrayList<owlRuleSet> existingRules = this.owlRulesMap
                             .pop(className);
-                    /*
-                     * for (owlRuleSet currRule : existingRules){
-                     * Set<OWLClassExpression> blah =
-                     * currRule.getRuleList(className); for (OWLClassExpression
-                     * c :blah){ Node<OWLClass> curr =
-                     * factplusplus.getEquivalentClasses(c);
-                     * System.out.println(curr.toString()); }
-                     */
                     existingRules.add(owlRules);
                     this.owlRulesMap.put(className, existingRules);
                 }
@@ -392,4 +396,8 @@ public class OntologyCreator {
         this.definedOWLClass.add(cls);
         return cls;
     }
+    public loadIndividualsFromDB(){
+        this.
+    }
+
 }

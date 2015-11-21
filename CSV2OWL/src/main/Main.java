@@ -79,7 +79,8 @@ public class Main {
             nameIndex = getColIndexes(gDocFileName);
             /* create ontology */
             OntologyCreator ontCreate = new OntologyCreator();
-            ontCreate.createOntology(iriString, "version_1_0", owlFile);
+            ontCreate.loadOntology(iriString, "version_1_0", owlFile);
+            //ontCreate.createOntology(iriString, "version_1_0", owlFile);
             ontCreate.createOntologyObject(nameIndex, gDocFileName);
         } catch (OWLOntologyCreationException e) {
             throw new RuntimeException(e.getMessage(), e);
