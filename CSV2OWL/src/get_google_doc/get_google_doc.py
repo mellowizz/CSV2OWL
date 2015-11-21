@@ -37,7 +37,7 @@ else:
     infile = io.open(output_file, 'wb')
 
 # print(response.content)
-''' write google doc to file '''
+""" write google doc to file """
 with infile as csv:
     response.raw.decode_content = True
     shutil.copyfileobj(response.raw, csv)
